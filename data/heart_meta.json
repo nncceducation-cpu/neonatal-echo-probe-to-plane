@@ -1,0 +1,234 @@
+{
+ "units": "cm",
+ "frame": {
+  "x": "patient left",
+  "y": "patient superior",
+  "z": "anterior",
+  "origin": "suprasternal notch (skin)"
+ },
+ "source": "BodyParts3D, (c) Database Center for Life Science (DBCLS), CC BY-SA 2.1 Japan",
+ "structures": [
+  {
+   "id": "myo",
+   "label": "Myocardium",
+   "group": "wall",
+   "vByte": 0,
+   "vCount": 71802,
+   "iByte": 861624,
+   "iCount": 145904
+  },
+  {
+   "id": "mv",
+   "label": "Mitral valve",
+   "group": "valve",
+   "vByte": 2612472,
+   "vCount": 6996,
+   "iByte": 2696424,
+   "iCount": 14102
+  },
+  {
+   "id": "tv",
+   "label": "Tricuspid valve",
+   "group": "valve",
+   "vByte": 2865648,
+   "vCount": 4570,
+   "iByte": 2920488,
+   "iCount": 10366
+  },
+  {
+   "id": "pv",
+   "label": "Pulmonary valve",
+   "group": "valve",
+   "vByte": 3044880,
+   "vCount": 8687,
+   "iByte": 3149124,
+   "iCount": 17390
+  },
+  {
+   "id": "aorta_asc",
+   "label": "Ascending aorta",
+   "group": "vessel",
+   "vByte": 3357804,
+   "vCount": 1076,
+   "iByte": 3370716,
+   "iCount": 2148
+  },
+  {
+   "id": "arch",
+   "label": "Aortic arch",
+   "group": "vessel",
+   "vByte": 3396492,
+   "vCount": 865,
+   "iByte": 3406872,
+   "iCount": 1726
+  },
+  {
+   "id": "aorta_desc",
+   "label": "Descending aorta",
+   "group": "vessel",
+   "vByte": 3427584,
+   "vCount": 5811,
+   "iByte": 3497316,
+   "iCount": 11622
+  },
+  {
+   "id": "svc",
+   "label": "Superior vena cava",
+   "group": "vessel",
+   "vByte": 3636780,
+   "vCount": 768,
+   "iByte": 3645996,
+   "iCount": 1532
+  },
+  {
+   "id": "ivc",
+   "label": "Inferior vena cava",
+   "group": "vessel",
+   "vByte": 3664380,
+   "vCount": 1182,
+   "iByte": 3678564,
+   "iCount": 2360
+  },
+  {
+   "id": "cs",
+   "label": "Coronary sinus",
+   "group": "detail",
+   "vByte": 3706884,
+   "vCount": 952,
+   "iByte": 3718308,
+   "iCount": 1900
+  },
+  {
+   "id": "pap_al",
+   "label": "Anterolateral papillary muscle",
+   "group": "detail",
+   "vByte": 3741108,
+   "vCount": 1996,
+   "iByte": 3765060,
+   "iCount": 3984
+  },
+  {
+   "id": "pap_pm",
+   "label": "Posteromedial papillary muscle",
+   "group": "detail",
+   "vByte": 3812868,
+   "vCount": 1917,
+   "iByte": 3835872,
+   "iCount": 3832
+  },
+  {
+   "id": "pap_rv_a",
+   "label": "RV anterior papillary muscle",
+   "group": "detail",
+   "vByte": 3881856,
+   "vCount": 1853,
+   "iByte": 3904092,
+   "iCount": 3702
+  },
+  {
+   "id": "pap_rv_p",
+   "label": "RV posterior papillary muscle",
+   "group": "detail",
+   "vByte": 3948516,
+   "vCount": 1315,
+   "iByte": 3964296,
+   "iCount": 2626
+  },
+  {
+   "id": "pap_rv_s",
+   "label": "RV septal papillary muscle",
+   "group": "detail",
+   "vByte": 3995808,
+   "vCount": 929,
+   "iByte": 4006956,
+   "iCount": 1854
+  },
+  {
+   "id": "av",
+   "label": "Aortic valve",
+   "group": "valve",
+   "vByte": 4029204,
+   "vCount": 1056,
+   "iByte": 4041876,
+   "iCount": 2112
+  },
+  {
+   "id": "mpa",
+   "label": "Main pulmonary artery",
+   "group": "vessel",
+   "vByte": 4067220,
+   "vCount": 866,
+   "iByte": 4077612,
+   "iCount": 1712
+  },
+  {
+   "id": "lpa",
+   "label": "Left pulmonary artery",
+   "group": "vessel",
+   "vByte": 4098156,
+   "vCount": 1574,
+   "iByte": 4117044,
+   "iCount": 3163
+  },
+  {
+   "id": "rpa",
+   "label": "Right pulmonary artery",
+   "group": "vessel",
+   "vByte": 4155000,
+   "vCount": 1106,
+   "iByte": 4168272,
+   "iCount": 2202
+  },
+  {
+   "id": "lupv",
+   "label": "Left upper pulmonary vein",
+   "group": "vessel",
+   "vByte": 4194696,
+   "vCount": 1275,
+   "iByte": 4209996,
+   "iCount": 2598
+  },
+  {
+   "id": "llpv",
+   "label": "Left lower pulmonary vein",
+   "group": "vessel",
+   "vByte": 4241172,
+   "vCount": 978,
+   "iByte": 4252908,
+   "iCount": 1994
+  },
+  {
+   "id": "rupv",
+   "label": "Right upper pulmonary vein",
+   "group": "vessel",
+   "vByte": 4276836,
+   "vCount": 660,
+   "iByte": 4284756,
+   "iCount": 1346
+  },
+  {
+   "id": "rlpv",
+   "label": "Right lower pulmonary vein",
+   "group": "vessel",
+   "vByte": 4300908,
+   "vCount": 560,
+   "iByte": 4307628,
+   "iCount": 1109
+  }
+ ],
+ "chamber_codes": {
+  "outside": 1,
+  "lv": 2,
+  "rv": 3,
+  "la": 4,
+  "ra": 5
+ },
+ "chamber_volumes_ml": {
+  "outside": 129.03946987499998,
+  "lv": 6.316876124999999,
+  "rv": 10.084257,
+  "la": 8.143385624999999,
+  "ra": 7.256557125
+ },
+ "bytes": 4320936
+}
