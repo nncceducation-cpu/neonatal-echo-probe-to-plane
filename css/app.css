@@ -118,7 +118,10 @@ footer code{background:#16202e;padding:1px 4px;border-radius:3px}
 #stage2d .scan-reference img{flex:1;min-height:0;max-height:none;object-fit:contain;width:100%}
 #stage2d .scan-reference video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
 .echo-source-link{font-size:10px;color:var(--accent)}
-.echo-reference-toggle{font-size:11px;padding:5px 8px!important}
+.echo-toolbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;gap:8px;align-items:center;padding:8px 12px;background:#101b27;border-bottom:1px solid var(--line);min-height:44px}
+.echo-toolbar button{font:600 12px system-ui;padding:7px 11px;border:1px solid #579bd0;border-radius:7px;cursor:pointer;background:#173a56;color:#fff}
+.echo-toolbar .echo-reference-toggle:not(:disabled){background:#4fb0ff;color:#04121e}
+.echo-toolbar .echo-fit{margin-left:auto;white-space:nowrap}
 button:disabled{opacity:.55;cursor:default}
 
 /* Fit the workbench to the window; each sidebar owns its scroll area. */
@@ -162,4 +165,9 @@ footer{flex:none;padding:5px 16px;max-height:30vh;overflow:auto}
   header{padding:8px 10px;flex-wrap:wrap}
   header h1{font-size:15px}
   .mbtn{padding:6px 9px}
+}
+@media(min-width:700px) and (max-width:1000px){
+ .open-views main{display:grid;grid-template-columns:260px minmax(0,1fr)}
+ .open-views #side-left{position:relative;width:auto;inset:auto;transform:none;box-shadow:none;grid-column:1;grid-row:1}
+ .open-views #stages{grid-column:2;grid-row:1;min-width:0}
 }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Neonatal echo: probe to plane</title>
 <meta name="description" content="Educational heart anatomy and probe-plane explorer with fixed acoustic windows, interactive sections, and supplied recorded echo studies. Not a diagnostic simulator.">
-<link rel="stylesheet" href="css/app.css?v=20260929-2">
+<link rel="stylesheet" href="css/app.css?v=20260929-3">
 </head>
 <body class="open-views">
 <header>
@@ -43,7 +43,7 @@
 
   <section id="stages">
     <div id="stage3d"><canvas id="c3d"></canvas>
-      <button id="surface-view" class="surface-view">Whole textured heart</button>
+      <button id="surface-view" class="surface-view">Reset 3D heart</button>
       <div class="cap" id="surface-credit">Normal Neonatal Heart · E-learning UMCG · CC BY-NC-SA 4.0</div>
     </div>
     <div id="stage2d"><canvas id="c2d"></canvas>
@@ -111,7 +111,7 @@
     </div>
 
     <h3>Depth</h3>
-    <input type="range" id="depth" min="2" max="9" step="0.25" value="5">
+    <input type="range" id="depth" min="2" max="12" step="0.25" value="5">
     <span id="depth-val" class="mono"></span>
 
     <h3>Image</h3>
@@ -147,6 +147,6 @@
   </details>
 </footer>
 
-<script type="module" src="js/app.js?v=20260929-2"></script>
+<script type="module" src="js/app.js?v=20260929-3"></script>
 </body>
 </html>

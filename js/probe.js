@@ -19,8 +19,8 @@
 //   rotate   turn the transducer about the beam axis      (changes the section)
 //   depth    the machine's depth setting                  (changes the sector)
 
-import { add, sub, mul, dot, cross, unit } from './geom.js?v=20260929-2';
-import { skinAt } from './body.js?v=20260929-2';
+import { add, sub, mul, dot, cross, unit } from './geom.js?v=20260929-3';
+import { skinAt } from './body.js?v=20260929-3';
 
 const DEG = Math.PI / 180;
 
@@ -92,7 +92,7 @@ export class Probe {
   }
 
   setDepth(cm) {
-    this.depth = Math.max(2.0, Math.min(9.0, cm));
+    this.depth = Math.max(2.0, Math.min(12.0, cm));
     return this;
   }
 

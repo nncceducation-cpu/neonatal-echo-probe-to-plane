@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-2';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-2';
-import { SectorView, SHORT } from './sector.js?v=20260929-2';
-import { Scene3D } from './scene3d.js?v=20260929-2';
-import { Probe } from './probe.js?v=20260929-2';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-2';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-2';
+import { buildStructures } from './geom.js?v=20260929-3';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-3';
+import { SectorView, SHORT } from './sector.js?v=20260929-3';
+import { Scene3D } from './scene3d.js?v=20260929-3';
+import { Probe } from './probe.js?v=20260929-3';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-3';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-3';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -22,6 +22,7 @@ const state = {
   scene: null, sector: null, probe: null,
   view: null, mode: 'guided', quiz: null, groups: null,
   highlight: new Set(), registered: null,
+  autoFitEcho: true,
 };
 
 async function boot() {
@@ -61,6 +62,9 @@ async function boot() {
   buildControls();
   selectView(views.views[0].id, true);
   window.addEventListener('resize', layout);
+  const resizeObserver = new ResizeObserver(() => layout());
+  resizeObserver.observe($('#stage3d'));
+  resizeObserver.observe($('#stage2d'));
   layout();
   (function loop() {
     state.scene.render();
@@ -106,6 +110,7 @@ function selectView(id, initial = false) {
   const v = state.views.views.find((x) => x.id === id);
   state.view = v;
   state.probe = new Probe(v);
+  state.autoFitEcho = true;
   state.quiz = null;
   if (!initial) activateSection();
   document.querySelectorAll('.vbtn').forEach((b) => {
@@ -203,10 +208,20 @@ function buildControls() {
     $('#scan-reference small').textContent = 'This local clip could not load. Open the original study below.';
   };
   $('#stage2d').append(reference);
-  const referenceButton = el('button','surface-view echo-reference-toggle','Show clinical reference');
-  $('#stage2d').append(referenceButton);
+  const echoToolbar = el('div','echo-toolbar');
+  const referenceButton = el('button','echo-reference-toggle','▶ Clinical clip');
+  const fitButton = el('button','echo-fit','Fit whole section');
+  fitButton.onclick = () => { state.autoFitEcho = true; update(); };
+  echoToolbar.append(referenceButton,fitButton);
+  $('#stage2d').prepend(echoToolbar);
   referenceButton.onclick = () => {
-    if (!referenceMatches(state.probe,state.view)) return;
+    if (!echoReferences[state.view.id]) return;
+    if (!referenceMatches(state.probe,state.view)) {
+      state.probe.load(state.view); state.autoFitEcho = true;
+    }
+    state.scene.showCut = true;
+    $('#t-cut').checked = true;
+    $('#surface-credit').hidden = true;
     const on = $('#stage2d').classList.toggle('reference-mode');
     if (on) video.play().catch(() => {}); else video.pause();
     update();
@@ -233,6 +248,14 @@ function buildControls() {
     };
   }
   $('#surface-view').onclick = () => {
+    $('#echo-study-video').pause();
+    $('#stage2d').classList.remove('reference-mode');
+    state.probe.load(state.view);
+    state.autoFitEcho = true;
+    document.body.classList.add('open-views');
+    document.body.classList.remove('open-controls');
+    $('#panel-views').setAttribute('aria-expanded','true');
+    $('#panel-controls').setAttribute('aria-expanded','false');
     $('#t-cut').checked = false;
     $('#t-cut').onchange({target: $('#t-cut')});
   };
@@ -254,6 +277,7 @@ function buildControls() {
   bind('#reset', () => state.probe.load(state.view));
 
   $('#depth').oninput = (e) => {
+    state.autoFitEcho = false;
     state.probe.setDepth(+e.target.value);
     $('#depth-val').textContent = `${(+e.target.value).toFixed(1)} cm`;
     update();
@@ -378,11 +402,17 @@ function update() {
     ? 'Recorded echo study · independent source patient'
     : 'Educational chamber section — not a diagnostic echo image';
   const referenceButton = $('.echo-reference-toggle');
-  referenceButton.disabled = !matched;
-  referenceButton.textContent = !ref ? 'No reviewed clip for this view'
-    : !matched ? 'Off reference plane — reset view to play clip'
-    : referenceMode ? 'Show live teaching section' : 'Play matched echo study';
+  referenceButton.disabled = !ref;
+  referenceButton.textContent = !ref ? 'No clinical clip for this view'
+    : !matched ? '▶ Reset view & play clinical clip'
+    : referenceMode ? 'Show simulated section' : '▶ Play clinical clip';
   const plane = p.plane();
+  if (state.autoFitEcho && state.registered) {
+    const fitted = state.registered.fitSector(plane);
+    p.depth = fitted.depth; p.sector = fitted.sector;
+    $('#depth').value = p.depth;
+    $('#depth-val').textContent = `${p.depth.toFixed(1)} cm · fan ${p.sector}° (auto-fit)`;
+  }
   const view = { ...v, depth: p.depth, sector: p.sector };
   const slices = sliceAll(state.structures, plane)
     .filter((r) => state.groups.has(r.group));

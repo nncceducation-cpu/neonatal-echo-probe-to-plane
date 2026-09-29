@@ -75,6 +75,19 @@ export class RegisteredHeart {
     return this.labels[(i * ny + j) * nz + k];
   }
 
+  fitSector(plane) {
+    // Fit intersected anatomy without changing the contact or slice plane.
+    let radius = 2, angle = 35;
+    for (let d=.15; d<=8.5; d+=.12) for (let x=-8; x<=8; x+=.12) {
+      const p=plane.origin.map((o,i)=>o+plane.u[i]*x+plane.v[i]*d);
+      if (this.sample(p) === 1) continue;
+      radius=Math.max(radius,Math.hypot(x,d));
+      angle=Math.max(angle,Math.abs(Math.atan2(x,d))*180/Math.PI);
+    }
+    return {depth:Math.min(12,Math.ceil((radius+.45)*4)/4),
+      sector:Math.min(176,Math.ceil((angle+5)*2))};
+  }
+
   // Construct a Three.js group without making this module depend on Three.js.
   makeMeshes(THREE, clippingPlane) {
     const group = new THREE.Group();
