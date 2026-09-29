@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
+.media-tools/
+docs/echo-review/
 .pwbrowsers/

@@ -1,5 +1,37 @@
 # Neonatal echo: probe to plane
 
+## Shared educational app
+
+Open https://nncceducation-cpu.github.io/neonatal-echo-probe-to-plane/
+
+Includes the textured neonatal surface, section-facing camera, locked probe
+windows, mouse/touchpad slicing, supine overview, responsive Standard Views and
+Controls panels, quiz mode, and five recorded echo references. The source
+recordings are published with the project owner's explicit authorization.
+See `THIRD_PARTY_NOTICES.md` for asset-specific licensing; the software MIT
+license does not relicense the clinical media or anatomical datasets.
+
+## Registered-anatomy section model
+
+This checkout now loads the included BodyParts3D-derived `heart.bin`,
+`heart_meta.json`, `chambers.bin`, and `frame.json` by default. The 3D heart is
+the registered external mesh; its red/blue cut face and the grayscale chamber
+panel sample the same chamber-label volume. The PLAX, apical four-chamber,
+subcostal long-axis, and four parasternal short-axis presets are fitted to
+the registered heart rather than simply reusing the idealised geometry's pose.
+`node tools/verify_registered.mjs` checks the principal chamber intersections.
+
+The ultrasound panel offers five supplied recorded studies matched to selected
+presets. These are independent recordings, not dynamically generated echo
+frames or a patient-matched registration. Unsupported views have no fallback.
+
+Limitations: the registered source is an adult anatomical atlas scaled to a
+term-newborn frame, not neonatal patient imaging. Its chamber grid does not
+encode all valve leaflets, septal details, vessel lumens, ultrasound physics,
+cardiac motion, or Doppler. The remaining presets still use the original
+idealised probe poses and require registration-specific clinical review. The
+grayscale display is a labeled anatomical section, not a realistic sonogram.
+
 An interactive 3-D neonatal heart in which **every standard echocardiography
 view is generated from a real transducer pose** — the window you put the probe
 on, the direction you aim it, and the way you rotate it. The cut plane is a
@@ -226,6 +258,39 @@ the structures you expect to see and not to see. Re-run both generators and the
 verifier; the verifier will tell you if the plane does not do what you claimed.
 
 ## Credits
+
+The reference panel now plays five locally downloaded cine studies from the
+user's Cardiac cases Drive folder instead of probe diagrams or generic stills.
+See `docs/echo-study-review.md` and `js/echo-references.js` for the source IDs,
+visual-review assignments and uncertainty. References require the preset pose;
+moving off-plane pauses and hides playback. No unrelated fallback is shown.
+The project owner authorized public inclusion of the supplied clips on 2026-09-29.
+
+During slicing, the camera follows the cut face perpendicular to the plane,
+with the same lateral/depth orientation as the ultrasound panel (including
+the display-mirror setting). The near half is removed and the torso is hidden
+while cut-follow is active. “Mouse: orbit” releases the camera; “Mouse: slice”
+restores cut-follow. Whole-heart mode retains the supine overhead view.
+
+Interaction update: each selected view locks its probe contact. Drag vertically
+on the 3D canvas or scroll/two-finger scroll to sweep; drag horizontally to
+rotate. Switch “Mouse: slice” to “Mouse: orbit” for camera controls. Arrow keys
+also sweep/rotate. The default anterior (+Z) camera looks down onto the supine
+torso, head toward screen top. Available supplied reference images appear in
+the ultrasound panel via “Show clinical reference”; they are static references,
+not generated from the current probe pose. Moving the probe returns to live mode.
+Run `node tools/verify_probe_lock.mjs` to verify locked-contact kinematics.
+
+The default external view uses **Normal Neonatal Heart**, E-learning UMCG,
+licensed CC BY-NC-SA 4.0, with its original surface textures. This is a separate
+surface asset, not a registration to the BodyParts3D chamber volume. Selecting
+a section switches to the existing teaching section model; these cuts are not
+validated diagnostic ultrasound. “Whole textured heart” returns to the surface.
+Keep attribution and noncommercial/share-alike terms with this asset.
+
+Both sidebars scroll independently. At compact widths, the header's **Views**
+and **Controls** buttons open the corresponding panel. Probe movement and depth
+controls appear above reference material. The camera fits the available canvas.
 
 Teaching framework, view list and clinical emphasis follow the SCAN
 (Sonographic Clinical Assessment of Newborn) workshop material and an

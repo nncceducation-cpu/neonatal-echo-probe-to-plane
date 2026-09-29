@@ -67,11 +67,12 @@ export class SectorView {
   /** Map plane centimetres to canvas pixels. */
   _fit(depth, sectorDeg) {
     const { width: W, height: H } = this.canvas;
-    const pad = 34;
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const pad = 52 * ratio;
     const half = (sectorDeg * Math.PI) / 360;
     // the sector spans 2*depth*sin(half) across and depth deep
     const sx = (W - 2 * pad) / (2 * depth * Math.sin(half));
-    const sy = (H - pad - 22) / depth;
+    const sy = Math.max(1,H - pad - 38 * ratio) / depth;
     const s = Math.min(sx, sy);
     return { s, ox: W / 2, oy: pad, W, H };
   }
@@ -120,11 +121,14 @@ export class SectorView {
     g.fillStyle = '#0a0c10';
     g.fillRect(0, 0, f.W, f.H);
 
+    if (extras.registered && extras.plane) {
+      this._drawRegistered(extras.registered, extras.plane, f, depth, sector);
+    }
     const byId = new Map(slices.map((r) => [r.id, r]));
     const order = PAINT_ORDER.filter((id) => byId.has(id))
       .concat(slices.map((r) => r.id).filter((id) => !PAINT_ORDER.includes(id)));
 
-    for (const id of order) {
+    for (const id of (extras.registered ? [] : order)) {
       if (SKIP_2D.has(id)) continue;
       const r = byId.get(id);
       const t = TISSUE[r.tissue] || TISSUE.myocardium;
@@ -147,7 +151,7 @@ export class SectorView {
       }
     }
 
-    if (this.opts.speckle) {
+    if (this.opts.speckle && !extras.registered) {
       g.globalCompositeOperation = 'overlay';
       g.globalAlpha = 0.5;
       const pat = g.createPattern(SPECKLE, 'repeat');
@@ -190,7 +194,50 @@ export class SectorView {
     g.font = '11px ui-monospace, monospace';
     g.fillText('index', mx + 10, f.oy + 2);
 
-    if (this.opts.labels) this._labels(slices, view, f, extras);
+    if (this.opts.labels && !extras.registered) this._labels(slices, view, f, extras);
+    g.restore();
+  }
+
+  _drawRegistered(volume, plane, f, depth, sector) {
+    const g = this.g, half = sector * Math.PI / 360;
+    this.registeredVisible = new Set();
+    const img = g.getImageData(0, 0, f.W, f.H);
+    const pix = img.data, step = 2;
+    const u = plane.u, v = plane.v, o = plane.origin;
+    for (let y = Math.max(0, Math.floor(f.oy)); y < Math.min(f.H, f.oy + depth * f.s); y += step) {
+      const d = (y - f.oy) / f.s;
+      const bound = Math.min(d * Math.tan(half), Math.sqrt(Math.max(0, depth * depth - d * d)));
+      const x0 = Math.max(0, Math.floor(f.ox - bound * f.s));
+      const x1 = Math.min(f.W, Math.ceil(f.ox + bound * f.s));
+      for (let x = x0; x < x1; x += step) {
+        const lateral = (x - f.ox) / f.s * (this.opts.invert ? -1 : 1);
+        const p = [o[0] + u[0] * lateral + v[0] * d,
+                   o[1] + u[1] * lateral + v[1] * d,
+                   o[2] + u[2] * lateral + v[2] * d];
+        const label = volume.sample(p);
+        if (label === 1) continue;
+        if (label >= 2) this.registeredVisible.add(label);
+        const neighbor = volume.sample([p[0] + u[0] * volume.step,
+                                        p[1] + u[1] * volume.step,
+                                        p[2] + u[2] * volume.step]);
+        const edge = neighbor !== label;
+        const noise = this.opts.speckle ? (((x * 73 + y * 151) ^ (x * y * 13)) & 31) - 16 : 0;
+        const grey = Math.max(0, Math.min(255, (edge ? 179 : label === 0 ? 112 : 19) + noise));
+        for (let yy = y; yy < Math.min(y + step, f.H); yy++) for (let xx = x; xx < Math.min(x + step, f.W); xx++) {
+          const at = (yy * f.W + xx) * 4;
+          pix[at] = pix[at + 1] = pix[at + 2] = grey;
+          pix[at + 3] = 255;
+        }
+      }
+    }
+    // A small display-space reconstruction filter softens voxel stair steps.
+    // It does not add valves, papillary muscles or simulated pathology.
+    const buffer = this.imageBuffer || (this.imageBuffer = document.createElement('canvas'));
+    buffer.width = f.W; buffer.height = f.H;
+    buffer.getContext('2d').putImageData(img, 0, 0);
+    g.save();
+    g.filter = `blur(${Math.min(2,window.devicePixelRatio || 1)*.7}px)`;
+    g.drawImage(buffer,0,0);
     g.restore();
   }
 

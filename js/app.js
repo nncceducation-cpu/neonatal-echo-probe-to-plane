@@ -6,6 +6,8 @@ import { sliceAll, loopInSector } from './slicer.js';
 import { SectorView, SHORT } from './sector.js';
 import { Scene3D } from './scene3d.js';
 import { Probe } from './probe.js';
+import { RegisteredHeart } from './registered-heart.js';
+import { echoReferences, referenceMatches } from './echo-references.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -19,7 +21,7 @@ const state = {
   anatomy: null, views: null, structures: null,
   scene: null, sector: null, probe: null,
   view: null, mode: 'guided', quiz: null, groups: null,
-  highlight: new Set(),
+  highlight: new Set(), registered: null,
 };
 
 async function boot() {
@@ -35,9 +37,29 @@ async function boot() {
 
   state.scene = new Scene3D($('#c3d'), anatomy, state.structures);
   state.sector = new SectorView($('#c2d'));
+  try {
+    state.registered = await RegisteredHeart.load();
+    state.views.views = state.views.views.map(view => state.registered.adaptView(view));
+    state.scene.useRegistered(state.registered, state.groups);
+    $('#anatomy-source').textContent = 'Registered anatomical mesh + chamber volume';
+    $('#t-labels').checked = false;
+    $('#t-labels').disabled = true;
+    $('#g-context').checked = false;
+    $('#g-context').disabled = true;
+  } catch (error) {
+    console.warn('Registered heart unavailable; using schematic anatomy', error);
+    $('#anatomy-source').textContent = 'Schematic anatomy fallback';
+  }
+  try {
+    await state.scene.loadSurface();
+    $('#anatomy-source').textContent = 'Textured neonatal surface · UMCG';
+  } catch (error) {
+    console.warn('Textured neonatal surface could not load', error);
+    $('#anatomy-source').textContent = 'Surface unavailable — anatomical mesh shown';
+  }
   buildViewList();
   buildControls();
-  selectView(views.views[0].id);
+  selectView(views.views[0].id, true);
   window.addEventListener('resize', layout);
   layout();
   (function loop() {
@@ -80,26 +102,145 @@ function buildViewList() {
   }
 }
 
-function selectView(id) {
+function selectView(id, initial = false) {
   const v = state.views.views.find((x) => x.id === id);
   state.view = v;
   state.probe = new Probe(v);
   state.quiz = null;
+  if (!initial) activateSection();
   document.querySelectorAll('.vbtn').forEach((b) => {
     b.classList.toggle('on', b.dataset.id === id);
   });
   renderInfo();
+  showReference(id);
   update();
+  state.scene.focusPlane(state.probe.plane());
+}
+
+function activateSection() {
+  $('#echo-study-video')?.pause();
+  $('#stage2d').classList.remove('reference-mode');
+  if ($('.echo-reference-toggle') && !$('.echo-reference-toggle').disabled)
+    $('.echo-reference-toggle').textContent = 'Show clinical reference';
+  const changed = !state.scene.showCut;
+  state.scene.showCut = true;
+  $('#t-cut').checked = true;
+  $('#surface-credit').hidden = true;
+  $('#anatomy-source').textContent = 'Section anatomy · right blue / left red';
+  return changed;
+}
+
+function showReference(id) {
+  const ref = echoReferences[id], box = $('#scan-reference');
+  const video = $('#echo-study-video');
+  video.pause();
+  video.removeAttribute('src');
+  const button = $('.echo-reference-toggle');
+  if (button) {
+    button.disabled = !ref;
+    button.textContent = ref ? 'Play matched echo study' : 'No reviewed clip for this view';
+  }
+  $('#stage2d').classList.remove('reference-mode');
+  box.hidden = !ref;
+  if (!ref) {video.load(); return;}
+  video.src = `assets/echo-studies/${ref.file}`;
+  video.setAttribute('aria-label',ref.title);
+  $('#scan-reference-caption').textContent = `${ref.title} · ${ref.source}`;
+  $('#scan-reference small').textContent = `${ref.landmarks} Separate recorded study, not a patient-matched reconstruction or tracked sweep.`;
+  $('#echo-source-link').href = `https://drive.google.com/file/d/${ref.id}/view`;
 }
 
 // ------------------------------------------------------------------- controls
 function buildControls() {
+  for (const id of ['slide-l','slide-r','slide-u','slide-d']) {
+    $(`#${id}`).disabled = true;
+    $(`#${id}`).title = 'Contact locked to the selected acoustic window';
+  }
+  $('#slide-l').parentElement.hidden = true;
+  const gestureHelp = el('p', 'gesture-help', 'Contact locked · Drag up/down to sweep; left/right to rotate. Scroll or use two fingers to sweep.');
+  $('#panel-free').prepend(gestureHelp);
+  const canvas = $('#c3d');
+  const orientation = el('span','patient-orientation','Supine · overhead · head ↑');
+  $('#stage3d').append(orientation);
+  const modeButton = el('button', 'surface-view gesture-toggle', 'Mouse: slice');
+  $('#stage3d').append(modeButton);
+  let slicing = true, drag = null;
+  state.scene.controls.enabled = false;
+  modeButton.onclick = () => {
+    slicing = !slicing; state.scene.controls.enabled = !slicing;
+    state.scene.followCut = slicing;
+    modeButton.textContent = slicing ? 'Mouse: slice' : 'Mouse: orbit';
+    update();
+  };
+  const move = (sweep, rotation) => {
+    activateSection(); state.probe.sweep(sweep); state.probe.rotate(rotation); update();
+  };
+  canvas.style.touchAction = 'none';
+  canvas.addEventListener('pointerdown', e => {
+    if (!slicing || e.button !== 0) return;
+    drag = {x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return;
+    move((e.clientY-drag.y)*.15,(e.clientX-drag.x)*.15);
+    drag = {x:e.clientX,y:e.clientY};
+  });
+  for (const type of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(type, () => {drag=null;});
+  canvas.addEventListener('wheel', e => {
+    if (!slicing) return;
+    e.preventDefault(); move(Math.max(-3,Math.min(3,e.deltaY*.035)),0);
+  }, {passive:false});
+  const reference = $('#scan-reference');
+  $('#scan-reference-image').remove();
+  const video = el('video');
+  video.id = 'echo-study-video'; video.controls = true; video.loop = true;
+  video.muted = true; video.playsInline = true; video.preload = 'metadata';
+  reference.prepend(video);
+  const sourceLink = el('a', 'echo-source-link', 'Open original study');
+  sourceLink.id = 'echo-source-link'; sourceLink.target = '_blank'; sourceLink.rel = 'noopener';
+  reference.append(sourceLink);
+  video.onerror = () => {
+    $('#scan-reference small').textContent = 'This local clip could not load. Open the original study below.';
+  };
+  $('#stage2d').append(reference);
+  const referenceButton = el('button','surface-view echo-reference-toggle','Show clinical reference');
+  $('#stage2d').append(referenceButton);
+  referenceButton.onclick = () => {
+    if (!referenceMatches(state.probe,state.view)) return;
+    const on = $('#stage2d').classList.toggle('reference-mode');
+    if (on) video.play().catch(() => {}); else video.pause();
+    update();
+  };
+  const tools = $('#panel-free');
+  $('#side-right').insertBefore(tools, $('#vmeta'));
+  tools.style.display = '';
+  const depth = $('#depth');
+  const heading = depth.previousElementSibling;
+  const output = $('#depth-val');
+  tools.append(heading, depth, output);
   $('#mode-guided').onclick = () => setMode('guided');
   $('#mode-free').onclick = () => setMode('free');
   $('#mode-quiz').onclick = () => setMode('quiz');
   $('#quiz-next').onclick = () => newQuiz();
+  $('#camera-home').onclick = () => state.scene.focusPlane(state.probe.plane());
+  for (const name of ['views', 'controls']) {
+    $(`#panel-${name}`).onclick = () => {
+      const open = !document.body.classList.contains(`open-${name}`);
+      for (const other of ['views', 'controls']) {
+        document.body.classList.toggle(`open-${other}`, open && other === name);
+        $(`#panel-${other}`).setAttribute('aria-expanded', String(open && other === name));
+      }
+    };
+  }
+  $('#surface-view').onclick = () => {
+    $('#t-cut').checked = false;
+    $('#t-cut').onchange({target: $('#t-cut')});
+  };
 
-  const bind = (sel, fn) => { $(sel).onclick = () => { fn(); update(); }; };
+  const bind = (sel, fn) => { $(sel).onclick = () => {
+    const changed = activateSection(); fn(); update();
+    if (changed) state.scene.focusPlane(state.probe.plane());
+  }; };
   bind('#rot-ccw', () => state.probe.rotate(-7.5));
   bind('#rot-cw', () => state.probe.rotate(7.5));
   bind('#sweep-back', () => state.probe.sweep(-5));
@@ -125,13 +266,19 @@ function buildControls() {
   toggle('#t-invert', 'invert', () => state.sector.opts);
   $('#t-cut').onchange = (e) => {
     state.scene.showCut = e.target.checked; update();
+    state.scene.focusPlane(state.probe.plane());
+    $('#anatomy-source').textContent = e.target.checked
+      ? 'Section anatomy · right blue / left red'
+      : state.scene.surface ? 'Textured neonatal surface · UMCG' : 'Anatomical mesh';
+    $('#surface-credit').hidden = e.target.checked || !state.scene.surface;
   };
   $('#t-axis').onchange = (e) => {
     state.scene.setAxisVisible(e.target.checked); update();
   };
   $('#t-torso').onchange = (e) => {
-    state.scene.torso.visible = e.target.checked;
-    state.scene.windowDots.visible = e.target.checked;
+    state.scene.showTorso = e.target.checked;
+    update();
+    state.scene.focusPlane(state.probe.plane());
   };
   for (const g of ['chamber', 'valve', 'vessel', 'detail', 'context']) {
     const c = $(`#g-${g}`);
@@ -152,13 +299,16 @@ function buildControls() {
       q: () => state.probe.rotate(-7.5), e: () => state.probe.rotate(7.5),
       w: () => state.probe.sweep(-5), s: () => state.probe.sweep(5),
       a: () => state.probe.rock(-5), d: () => state.probe.rock(5),
-      arrowleft: () => state.probe.slide(0.3, 0),
-      arrowright: () => state.probe.slide(-0.3, 0),
-      arrowup: () => state.probe.slide(0, 0.3),
-      arrowdown: () => state.probe.slide(0, -0.3),
+      arrowleft: () => state.probe.rotate(-5),
+      arrowright: () => state.probe.rotate(5),
+      arrowup: () => state.probe.sweep(-5),
+      arrowdown: () => state.probe.sweep(5),
       r: () => state.probe.load(state.view),
     };
-    if (map[k]) { ev.preventDefault(); map[k](); update(); }
+    if (map[k]) {
+      ev.preventDefault(); const changed = activateSection(); map[k](); update();
+      if (changed) state.scene.focusPlane(state.probe.plane());
+    }
   });
 }
 
@@ -168,7 +318,7 @@ function setMode(m) {
     b.classList.toggle('on', b.id === `mode-${m}`);
   });
   $('#panel-guided').style.display = m === 'guided' ? '' : 'none';
-  $('#panel-free').style.display = m === 'free' ? '' : 'none';
+  $('#panel-free').style.display = '';
   $('#panel-quiz').style.display = m === 'quiz' ? '' : 'none';
   if (m === 'quiz') newQuiz(); else state.quiz = null;
   if (m !== 'quiz') state.sector.opts.labels = $('#t-labels').checked;
@@ -177,6 +327,7 @@ function setMode(m) {
 
 // ---------------------------------------------------------------------- quiz
 function newQuiz() {
+  activateSection();
   const pool = state.views.views;
   const answer = pool[Math.floor(Math.random() * pool.length)];
   const choices = [answer];
@@ -188,6 +339,7 @@ function newQuiz() {
   state.quiz = { answer, choices, done: false };
   state.view = answer;
   state.probe = new Probe(answer);
+  showReference(answer.id);
   state.sector.opts.labels = false;
   const box = $('#quiz-choices');
   box.innerHTML = '';
@@ -219,22 +371,47 @@ function newQuiz() {
 // -------------------------------------------------------------------- render
 function update() {
   const p = state.probe, v = state.view;
+  const ref = state.mode === 'quiz' ? undefined : echoReferences[v.id];
+  const matched = !!ref && referenceMatches(p,v);
+  const referenceMode = $('#stage2d').classList.contains('reference-mode');
+  $('#stage2d .cap').textContent = referenceMode
+    ? 'Recorded echo study · independent source patient'
+    : 'Educational chamber section — not a diagnostic echo image';
+  const referenceButton = $('.echo-reference-toggle');
+  referenceButton.disabled = !matched;
+  referenceButton.textContent = !ref ? 'No reviewed clip for this view'
+    : !matched ? 'Off reference plane — reset view to play clip'
+    : referenceMode ? 'Show live teaching section' : 'Play matched echo study';
   const plane = p.plane();
   const view = { ...v, depth: p.depth, sector: p.sector };
   const slices = sliceAll(state.structures, plane)
     .filter((r) => state.groups.has(r.group));
   state.scene.setProbe(p.contact, p.beam, p.index);
+  state.scene.sliceInvert = state.sector.opts.invert;
+  state.scene.referenceReverseDepth = referenceMode && !!ref?.reverseDepth;
   state.scene.setPlane(plane, slices, view);
-  state.sector.draw(slices, view, { highlight: state.highlight });
+  $('.patient-orientation').textContent = state.scene.showCut && state.scene.followCut
+    ? `Cut-face view · ${referenceMode ? 'recorded-view orientation' : 'live-section orientation'} · beam ${state.scene.referenceReverseDepth ? '↑' : '↓'}`
+    : state.scene.showCut ? 'Free camera · return to Mouse: slice to face the cut'
+    : 'Supine · overhead · head ↑';
+  state.sector.draw(slices, view, { highlight: state.highlight,
+    registered: state.registered, plane });
 
-  const visible = slices.filter((r) => r.outer.concat(r.cavity)
-    .some((l) => loopInSector(l, p.depth, p.sector)));
   $('#seen').innerHTML = '';
-  for (const r of visible.filter((x) => x.group !== 'context')) {
-    const t = el('span', 'chip', SHORT[r.id] || r.id);
-    t.onmouseenter = () => { state.highlight = new Set([r.id]); update(); };
-    t.onmouseleave = () => { state.highlight = new Set(); update(); };
-    $('#seen').appendChild(t);
+  if (state.registered) {
+    const names = {2: 'LV', 3: 'RV', 4: 'LA', 5: 'RA'};
+    for (const code of state.sector.registeredVisible || []) {
+      $('#seen').appendChild(el('span', 'chip', names[code]));
+    }
+  } else {
+    const visible = slices.filter((r) => r.outer.concat(r.cavity)
+      .some((l) => loopInSector(l, p.depth, p.sector)));
+    for (const r of visible.filter((x) => x.group !== 'context')) {
+      const t = el('span', 'chip', SHORT[r.id] || r.id);
+      t.onmouseenter = () => { state.highlight = new Set([r.id]); update(); };
+      t.onmouseleave = () => { state.highlight = new Set(); update(); };
+      $('#seen').appendChild(t);
+    }
   }
 
   const dv = p.deviation(v);
@@ -257,6 +434,7 @@ function renderInfo() {
                 `index mark ${v.index_toward}`,
                 `depth ${v.depth} cm`, `sector ${v.sector}\u00b0`];
   if (v.clock_stated) bits.push(`stated pointer position ${v.clock_stated}`);
+  if (v.registration_note) bits.push('registered mesh fit');
   if (m.phi_from_plax_deg != null) {
     bits.push(`rotation about the long axis: ${m.phi_from_plax_deg}\u00b0 from PLAX`);
   }
@@ -296,6 +474,7 @@ function layout() {
   c.style.width = `${box.clientWidth}px`;
   c.style.height = `${box.clientHeight}px`;
   if (state.view) update();
+  if (state.view) state.scene.focusPlane(state.probe.plane());
 }
 
 boot();

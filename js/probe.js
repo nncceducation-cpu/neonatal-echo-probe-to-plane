@@ -87,9 +87,7 @@ export class Probe {
 
   /** Slide the contact point over the skin, keeping the beam aimed as it was. */
   slide(dLeft, dUp) {
-    const p = this.contact;
-    const q = skinAt(p[0] + dLeft, p[1] + dUp);
-    this.contact = q;
+    // The selected acoustic window is locked. Sweeping pivots at this point.
     return this;
   }
 

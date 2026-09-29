@@ -1,0 +1,119 @@
+// BodyParts3D-derived, neonatal-scale mesh and chamber labels.
+// Both displays sample the same patient-frame data; this remains a teaching
+// approximation, not a diagnostic reconstruction or ultrasound simulation.
+export class RegisteredHeart {
+  static async load() {
+    const [meta, frame, meshResponse, gridResponse] = await Promise.all([
+      fetch('data/heart_meta.json').then(r => r.json()),
+      fetch('data/frame.json').then(r => r.json()),
+      fetch('data/heart.bin'), fetch('data/chambers.bin'),
+    ]);
+    if (!meshResponse.ok || !gridResponse.ok) throw new Error('Registered anatomy assets unavailable');
+    const mesh = await meshResponse.arrayBuffer();
+    const buffer = await gridResponse.arrayBuffer();
+    const header = new DataView(buffer, 0, 28);
+    const origin = [0, 4, 8].map(i => header.getFloat32(i, true));
+    const step = header.getFloat32(12, true);
+    const dims = [16, 20, 24].map(i => header.getInt32(i, true));
+    const labels = new Uint8Array(buffer, 28);
+    if (labels.length !== dims[0] * dims[1] * dims[2]) throw new Error('Invalid chamber grid');
+    return new RegisteredHeart(meta, frame, mesh, origin, step, dims, labels);
+  }
+
+  constructor(meta, frame, mesh, origin, step, dims, labels) {
+    Object.assign(this, { meta, frame, mesh, origin, step, dims, labels });
+  }
+
+  adaptView(view) {
+    const h = this.frame.heart, seeds = this.frame.chamber_seeds;
+    const sub = (a,b) => a.map((x,i) => x-b[i]);
+    const add = (a,b) => a.map((x,i) => x+b[i]);
+    const mul = (a,s) => a.map(x => x*s);
+    const dot = (a,b) => a.reduce((s,x,i) => s+x*b[i],0);
+    const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+    const unit = a => mul(a,1/Math.hypot(...a));
+    const contact = view.contact, id = view.id;
+    let target, normal;
+    if (id.startsWith('psax_') && ['psax_av','psax_mv','psax_pap','psax_apical'].includes(id)) {
+      const fraction = {psax_av:1,psax_mv:.77,psax_pap:.44,psax_apical:.18}[id];
+      target = id === 'psax_av' ? h.valves.av : id === 'psax_mv' ? h.valves.mv
+        : add(h.apex,mul(sub(h.base,h.apex),fraction));
+      const ray = unit(sub(target,contact));
+      normal = unit(sub(h.long_axis,mul(ray,dot(h.long_axis,ray))));
+    } else if (id === 'a4c' || id === 'sub_long') {
+      const points = [seeds.lv,seeds.rv,seeds.la,seeds.ra];
+      normal = bestPlaneNormal(contact,points);
+      target = mul(points.reduce(add,[0,0,0]),1/points.length);
+    } else if (id === 'plax') {
+      const points = [h.apex,seeds.lv,seeds.la,h.valves.av];
+      normal = bestPlaneNormal(contact,points);
+      target = mul(points.reduce(add,[0,0,0]),1/points.length);
+    } else return view;
+    let beam = unit(sub(target,contact));
+    beam = unit(sub(beam,mul(normal,dot(beam,normal))));
+    let index = unit(cross(normal,beam));
+    if (dot(index,view.index)<0) {normal=mul(normal,-1);index=mul(index,-1)}
+    // Include the far myocardial wall within the selected depth, not below
+    // the bottom of the fan. Do not distort the plane or the sector angle.
+    const myo = this.meta.structures.find(s => s.id === 'myo');
+    let depth = view.depth;
+    if (myo) {
+      const p = new Float32Array(this.mesh, myo.vByte, myo.vCount*3);
+      for (let i=0;i<p.length;i+=3) depth = Math.max(depth,
+        Math.hypot(p[i]-contact[0],p[i+1]-contact[1],p[i+2]-contact[2])+.25);
+    }
+    depth = Math.min(9,Math.ceil(depth*4)/4);
+    return {...view,beam,index,depth,registration_note:'Probe plane fitted to the registered anatomy.'};
+  }
+
+  sample(p) {
+    const [nx, ny, nz] = this.dims;
+    const i = Math.round((p[0] - this.origin[0]) / this.step);
+    const j = Math.round((p[1] - this.origin[1]) / this.step);
+    const k = Math.round((p[2] - this.origin[2]) / this.step);
+    if (i < 0 || j < 0 || k < 0 || i >= nx || j >= ny || k >= nz) return 1;
+    return this.labels[(i * ny + j) * nz + k];
+  }
+
+  // Construct a Three.js group without making this module depend on Three.js.
+  makeMeshes(THREE, clippingPlane) {
+    const group = new THREE.Group();
+    const colors = { wall: 0x985c60, valve: 0xe6d7c9, vessel: 0xb98e8b, detail: 0xc4847c };
+    for (const s of this.meta.structures) {
+      const positions = new Float32Array(this.mesh, s.vByte, s.vCount * 3);
+      const indices = new Uint32Array(this.mesh, s.iByte, s.iCount * 3);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshStandardMaterial({
+        color: colors[s.group] || colors.wall, roughness: 0.79,
+        side: THREE.DoubleSide, clippingPlanes: [clippingPlane], clipShadows: true,
+      });
+      const part = new THREE.Mesh(geometry, material);
+      part.userData = { id: s.id, group: s.group, registered: true };
+      group.add(part);
+    }
+    return group;
+  }
+}
+
+// Smallest-eigenvalue direction of a 3x3 scatter matrix: least-squares plane
+// constrained to pass through the actual skin-contact point.
+function bestPlaneNormal(contact, points) {
+  const m = [[0,0,0],[0,0,0],[0,0,0]], v = [[1,0,0],[0,1,0],[0,0,1]];
+  for (const p of points) {const d=p.map((x,i)=>x-contact[i]);for(let i=0;i<3;i++)for(let j=0;j<3;j++)m[i][j]+=d[i]*d[j]}
+  for (let turn=0;turn<16;turn++) {
+    let p=0,q=1;
+    for(let i=0;i<3;i++)for(let j=i+1;j<3;j++)if(Math.abs(m[i][j])>Math.abs(m[p][q])){p=i;q=j}
+    if(Math.abs(m[p][q])<1e-10)break;
+    const angle=.5*Math.atan2(2*m[p][q],m[q][q]-m[p][p]);
+    const c=Math.cos(angle),s=Math.sin(angle);
+    for(let k=0;k<3;k++){const a=m[k][p],b=m[k][q];m[k][p]=c*a-s*b;m[k][q]=s*a+c*b}
+    for(let k=0;k<3;k++){const a=m[p][k],b=m[q][k];m[p][k]=c*a-s*b;m[q][k]=s*a+c*b;
+      const x=v[k][p],y=v[k][q];v[k][p]=c*x-s*y;v[k][q]=s*x+c*y}
+  }
+  const smallest=[0,1,2].sort((a,b)=>m[a][a]-m[b][b])[0];
+  const n=v.map(row=>row[smallest]);
+  return n.map(x=>x/Math.hypot(...n));
+}

@@ -8,6 +8,7 @@ import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
 import { PAINT_ORDER } from './sector.js';
 import { torsoSurface } from './body.js';
+import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
 const COLOR = {
   myocardium: 0xb2534f, blood: 0x1b2433, valve: 0xf0e6d2,
@@ -52,6 +53,9 @@ export class Scene3D {
     this.structures = structures;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.25;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0a0e14);
 
@@ -62,7 +66,7 @@ export class Scene3D {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
 
-    this.scene.add(new THREE.HemisphereLight(0xdfeaff, 0x20160f, 0.85));
+    this.scene.add(new THREE.HemisphereLight(0xfff4e8, 0x23343c, 2.1));
     const key = new THREE.DirectionalLight(0xffffff, 1.5);
     key.position.set(7, 9, 12);
     this.scene.add(key);
@@ -71,12 +75,15 @@ export class Scene3D {
     this.scene.add(rim);
 
     this.torso = buildTorso();
+    this.showTorso = true;
+    this.followCut = true;
     this.scene.add(this.torso);
 
     // heart meshes, one per structure part, with clipping planes attached
     this.clip = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
     this.renderer.localClippingEnabled = true;
     this.bodies = new THREE.Group();
+    this.registered = null;
     this.meshes = new Map();
     for (const [id, s] of structures) {
       const grp = new THREE.Group();
@@ -113,7 +120,23 @@ export class Scene3D {
     this.probe = this._buildProbe();
     this.scene.add(this.probe);
     this._buildLandmarks();
-    this.showCut = true;
+    this.showCut = false;
+  }
+
+  async loadSurface() {
+    const gltf = await new GLTFLoader().loadAsync('assets/normal-neonatal-heart.glb');
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    model.position.sub(center);
+    const scaled = new THREE.Group();
+    scaled.scale.setScalar(5.1 / Math.max(size.x, size.y, size.z));
+    scaled.add(model);
+    this.surface = new THREE.Group();
+    this.surface.add(scaled);
+    this.surface.position.set(.9, -3.1, -2.15);
+    this.scene.add(this.surface);
   }
 
   _buildProbe() {
@@ -176,8 +199,19 @@ export class Scene3D {
    * the cut face from the contour loops.
    */
   setPlane(plane, slices, view) {
+    this.lastPlane = plane;
+    if (this.showCut && this.followCut) this.focusPlane(plane);
+    const surfaceMode = !!this.surface && !this.showCut;
+    if (this.surface) this.surface.visible = surfaceMode;
+    if (this.registered) this.registered.visible = !surfaceMode;
+    this.probe.visible = !surfaceMode;
+    this.overlay.visible = !surfaceMode;
+    this.torso.visible = !!this.showTorso && !(this.showCut && this.followCut);
+    this.windowDots.visible = !surfaceMode && this.torso.visible;
+    this.caps.visible = !surfaceMode;
     const n = new THREE.Vector3(...plane.n).normalize();
     const o = new THREE.Vector3(...plane.origin);
+    if (n.dot(this.camera.position.clone().sub(o)) > 0) n.negate();
     // keep the half-space on the far side of the plane from the camera-facing
     // side, so the cut face is what you look at
     this.clip.setFromNormalAndCoplanarPoint(n, o);
@@ -185,10 +219,20 @@ export class Scene3D {
     this.bodies.traverse((m) => {
       if (m.material) m.material.clippingPlanes = enable ? [this.clip] : [];
     });
+    if (this.registered) this.registered.traverse((m) => {
+      if (m.material) m.material.clippingPlanes = enable ? [this.clip] : [];
+    });
 
     // fill the cut face
     this.caps.clear();
-    if (enable) {
+    if (this._registeredCap) {
+      this._registeredCap.material.map.dispose();
+      this._registeredCap.material.dispose();
+      this._registeredCap.geometry.dispose();
+      this._registeredCap = null;
+    }
+    if (enable && this.registeredVolume) this._drawRegisteredCap(plane);
+    if (enable && !this.registered) {
       const u = new THREE.Vector3(...plane.u);
       const v = new THREE.Vector3(...plane.v);
       const byId = new Map(slices.map((r) => [r.id, r]));
@@ -284,6 +328,121 @@ export class Scene3D {
       const s = this.structures.get(id);
       grp.visible = groups.has(s.group);
     }
+    if (this.registered) for (const mesh of this.registered.children) {
+      mesh.visible = groups.has(mesh.userData.group);
+    }
+  }
+
+  useRegistered(volume, groups) {
+    this.registeredVolume = volume;
+    this.registered = volume.makeMeshes(THREE, this.clip);
+    this.scene.add(this.registered);
+    this.bodies.visible = false;
+    this.setVisibleGroups(groups);
+    this.camera.position.set(9.0, -0.9, 12.0);
+    this.controls.target.set(0.8, -3, -2.2);
+    this.torso.visible = false;
+    this.windowDots.visible = false;
+    this.controls.update();
+  }
+
+  focusPlane(plane) {
+    if (this.showCut && this.followCut) {
+      // Same screen basis as the ultrasound: index to the right, beam down.
+      // View from the removed half-space, perpendicular to the cut face.
+      this.camera.up.set(...plane.v).negate();
+      if (this.referenceReverseDepth) this.camera.up.negate();
+      const myocardium = this.registered?.children.find(m => m.userData.id === 'myo');
+      const box = new THREE.Box3().setFromObject(myocardium || this.bodies)
+        .union(new THREE.Box3().setFromObject(this.probe));
+      const side = (this.sliceInvert ? -1 : 1) * (this.referenceReverseDepth ? -1 : 1);
+      this.fitBox(box, new THREE.Vector3(...plane.n).multiplyScalar(side));
+      return;
+    }
+    // +Z is anterior: looking down onto the chest of a supine patient.
+    if (this.showTorso) {
+      this.camera.up.set(0,1,0);
+      this.frameObject(this.torso, new THREE.Vector3(0,0,1));
+      return;
+    }
+    if (this.surface && !this.showCut) {
+      this.camera.up.set(0,1,0);
+      this.frameObject(this.surface, new THREE.Vector3(.12,.06,1));
+      return;
+    }
+    const center = this.registered
+      ? new THREE.Box3().setFromObject(this.registered.children.find(m => m.userData.id === 'myo'))
+        .union(new THREE.Box3().setFromObject(this.probe)).getCenter(new THREE.Vector3())
+      : new THREE.Vector3(0.9, -3.1, -2.15);
+    const normal = new THREE.Vector3(...plane.n).normalize();
+    this.controls.target.copy(center);
+    this.camera.position.copy(center).addScaledVector(normal, -19);
+    this.camera.up.set(0, 1, 0);
+    this.controls.update();
+    const groupBox = new THREE.Box3().setFromObject(this.registered || this.bodies)
+      .union(new THREE.Box3().setFromObject(this.probe));
+    this.fitBox(groupBox, normal.negate());
+  }
+
+  frameObject(object, direction) { this.fitBox(new THREE.Box3().setFromObject(object), direction); }
+
+  fitBox(box, direction) {
+    const center = box.getCenter(new THREE.Vector3());
+    const vertical = THREE.MathUtils.degToRad(this.camera.fov / 2);
+    const forward = direction.clone().normalize();
+    const right = new THREE.Vector3().crossVectors(this.camera.up, forward).normalize();
+    if (right.lengthSq() < .01) right.set(1, 0, 0);
+    const up = new THREE.Vector3().crossVectors(forward, right).normalize();
+    let distance = 0;
+    for (const x of [box.min.x, box.max.x])
+      for (const y of [box.min.y, box.max.y])
+        for (const z of [box.min.z, box.max.z]) {
+          const p = new THREE.Vector3(x,y,z).sub(center);
+          distance = Math.max(distance, p.dot(forward) + Math.max(
+            Math.abs(p.dot(up)) / Math.tan(vertical),
+            Math.abs(p.dot(right)) / (Math.tan(vertical) * this.camera.aspect)));
+        }
+    distance *= 1.13;
+    this.controls.target.copy(center);
+    this.camera.position.copy(center).addScaledVector(direction.normalize(), distance);
+    this.controls.update();
+  }
+
+  _drawRegisteredCap(plane) {
+    const N = 256, width = 10, height = 9;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = N;
+    const ctx = canvas.getContext('2d');
+    const image = ctx.createImageData(N, N);
+    const u = plane.u, v = plane.v, o = plane.origin;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const a = (x / (N - 1) - 0.5) * width;
+      const b = (1 - y / (N - 1)) * height;
+      const p = [o[0] + u[0] * a + v[0] * b,
+                 o[1] + u[1] * a + v[1] * b,
+                 o[2] + u[2] * a + v[2] * b];
+      const label = this.registeredVolume.sample(p);
+      const at = (y * N + x) * 4;
+      if (label === 1) continue;
+      const color = label === 0 ? [190, 104, 108]
+        : label === 2 || label === 4 ? [144, 28, 40] : [36, 75, 154];
+      image.data[at] = color[0]; image.data[at + 1] = color[1];
+      image.data[at + 2] = color[2]; image.data[at + 3] = 255;
+    }
+    ctx.putImageData(image, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const material = new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide,
+      transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2});
+    const cap = new THREE.Mesh(geometry, material);
+    const axisU = new THREE.Vector3(...u), axisV = new THREE.Vector3(...v);
+    const normal = new THREE.Vector3().crossVectors(axisU, axisV).normalize();
+    cap.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(axisU, axisV, normal));
+    cap.position.copy(new THREE.Vector3(...o).addScaledVector(axisV, height / 2));
+    cap.renderOrder = 1000;
+    this.caps.add(cap);
+    this._registeredCap = cap;
   }
 
   resize(w, h) {
