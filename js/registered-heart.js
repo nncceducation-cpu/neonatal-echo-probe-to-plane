@@ -98,7 +98,8 @@ export class RegisteredHeart {
     const key = [...plane.origin,...plane.u,...plane.v,...plane.n].join(',');
     if (this.valveCache?.key === key) return this.valveCache.sections;
     const sections = [];
-    for (const mesh of this.meta.structures.filter(s=>s.group === 'valve' || s.group === 'detail' || s.id === 'myo')) {
+    // AV is a generated funnel in build_mesh_assets.py, not source anatomy.
+    for (const mesh of this.meta.structures.filter(s=>s.id !== 'av' && (s.group === 'valve' || s.group === 'detail' || s.id === 'myo'))) {
       const vertices = new Float32Array(this.mesh,mesh.vByte,mesh.vCount*3);
       const indices = new Uint32Array(this.mesh,mesh.iByte,mesh.iCount*3);
       const distances = new Float32Array(mesh.vCount);
@@ -136,7 +137,25 @@ export class RegisteredHeart {
     return crossings.sort((a,b)=>a-b);
   }
 
-  sampleSection(point,lateral,crossings) {
+  tissueIntervals(plane,depth) {
+    return this.meshSections(plane).filter(s=>(s.group==='valve' && this.showValves!==false) || (s.group==='detail' && this.showDetails!==false)).map(s=>{
+      const crossings=[];
+      for(const [a,b] of s.segments) {
+        if((a[1]>depth)===(b[1]>depth)) continue;
+        crossings.push(a[0]+(depth-a[1])*(b[0]-a[0])/(b[1]-a[1]));
+      }
+      crossings.sort((a,b)=>a-b);
+      // An unclosed contour cannot establish a solid tissue interval.
+      return {label:s.group==='valve'?6:0,crossings:crossings.length%2 ? [] : crossings};
+    });
+  }
+
+  sampleSection(point,lateral,crossings,tissues=[]) {
+    for(const tissue of tissues) {
+      let count=0;
+      for(const x of tissue.crossings) {if(x>lateral) break;count++;}
+      if(count%2) return tissue.label;
+    }
     let hits=0;
     for(const x of crossings) {if(x>lateral) break;hits++;}
     if(hits%2) return 0;
@@ -213,6 +232,7 @@ export class RegisteredHeart {
     const group = new THREE.Group();
     const colors = { wall: 0x985c60, valve: 0xe6d7c9, vessel: 0xb98e8b, detail: 0xc4847c };
     for (const s of this.meta.structures) {
+      if(s.id==='av') continue; // Synthetic funnel is not a resolved valve.
       const positions = new Float32Array(this.mesh, s.vByte, s.vCount * 3);
       const indices = new Uint32Array(this.mesh, s.iByte, s.iCount * 3);
       const geometry = new THREE.BufferGeometry();

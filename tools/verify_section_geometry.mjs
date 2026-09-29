@@ -12,6 +12,8 @@ assert.equal(heart.sampleSection([0,0,0],1,crossings),0);
 assert.equal(heart.sampleSection([0,0,0],3,crossings),1);
 heart.sample=()=>2;
 assert.equal(heart.sampleSection([0,0,0],3,crossings),2);
+assert.equal(heart.sampleSection([0,0,0],3,crossings,[{label:6,crossings:[2.9,3.1]}]),6);
+assert.equal(heart.sampleSection([0,0,0],3.2,crossings,[{label:6,crossings:[2.9,3.1]}]),2);
 const probe=new Probe({id:'test',contact:[0,0,0],beam:[0,0,1],index:[1,0,.05],depth:12,sector:90});
 const plane=probe.plane();
 assert.ok(Math.abs(plane.u.reduce((s,x,i)=>s+x*plane.v[i],0))<1e-12);

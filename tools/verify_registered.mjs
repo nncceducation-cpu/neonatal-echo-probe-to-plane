@@ -18,13 +18,10 @@ const av = heart.adaptView(views.find(v=>v.id === 'psax_av'));
 const avNormal = [av.beam[1]*av.index[2]-av.beam[2]*av.index[1],av.beam[2]*av.index[0]-av.beam[0]*av.index[2],av.beam[0]*av.index[1]-av.beam[1]*av.index[0]];
 const avPlane = {origin:av.contact,u:av.index,v:av.beam,n:avNormal};
 if (!heart.aorticSectionVisible(avPlane)) throw Error('AV preset does not intersect the valve reconstruction');
-let cusps=0;
-const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},closePath(){},stroke(){cusps++}};
-heart.drawAorticSection(context,avPlane,(x,y)=>[x,y]);
-if(cusps!==3) throw Error('Expected three cusp surfaces');
+if(heart.valveSections(avPlane).some(s=>s.id==='av')) throw Error('Synthetic aortic funnel must not appear as source tissue');
 const displaced = {...avPlane,origin:avPlane.origin.map((x,i)=>x+avNormal[i])};
 if(heart.aorticSectionVisible(displaced)) throw Error('AV should disappear away from its basal level');
-console.log('AV root intersection, three cusps and off-level exclusion — pass');
+console.log('AV root targeting and synthetic valve exclusion — pass');
 const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 const visible = view => {
   const v = heart.adaptView(view), n = cross(v.beam,v.index);
@@ -52,6 +49,6 @@ for(const original of views) {
     if(!segment.flat().every(Number.isFinite)) throw Error('Non-finite valve contour');
   }
   console.log(`${v.id} valve intersections: ${sections.map(s=>s.id).join(', ') || 'none'}`);
-  const expected={plax:['mv','av'],plax_rv_in:['tv'],plax_rv_out:['pv'],a4c:['mv','tv'],a2c:['mv'],a3c:['mv','av'],a5c:['av'],sub_lvot:['av'],sub_rvot:['pv'],psax_mv:['mv'],psax_av:['av']}[v.id];
+  const expected={plax:['mv'],plax_rv_in:['tv'],plax_rv_out:['pv'],a4c:['mv','tv'],a2c:['mv'],a3c:['mv'],sub_rvot:['pv'],psax_mv:['mv']}[v.id];
   if(expected) for(const id of expected) if(!sections.some(s=>s.id===id)) throw Error(`${v.id} missing ${id}`);
 }

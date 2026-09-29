@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-7';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-7';
-import { SectorView, SHORT } from './sector.js?v=20260929-7';
-import { Scene3D } from './scene3d.js?v=20260929-7';
-import { Probe } from './probe.js?v=20260929-7';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-7';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-7';
+import { buildStructures } from './geom.js?v=20260929-8';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-8';
+import { SectorView, SHORT } from './sector.js?v=20260929-8';
+import { Scene3D } from './scene3d.js?v=20260929-8';
+import { Probe } from './probe.js?v=20260929-8';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-8';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-8';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -435,20 +435,8 @@ function update() {
     ? `Cut-face view · ${referenceMode ? 'recorded-view orientation' : 'live-section orientation'} · beam ${state.scene.referenceReverseDepth ? '↑' : '↓'}`
     : state.scene.showCut ? 'Free camera · return to Mouse: slice to face the cut'
       : 'Supine · overhead · head ↑';
-  if (state.scene.showCut && state.registered?.aorticSectionVisible(plane)) {
-    $('.patient-orientation').textContent += ' · AV: three closed cusps (teaching reconstruction)';
-  }
-  const detail = $('#valve-detail');
-  detail.hidden = !(state.groups.has('valve') && state.scene.showCut && state.registered?.aorticSectionVisible(plane));
-  if (!detail.hidden) {
-    const root = state.registered.frame.heart.aortic_root;
-    const offset = root.centre.map((x,i)=>x-plane.origin[i]);
-    const cx = offset.reduce((s,x,i)=>s+x*plane.u[i],0);
-    const cy = offset.reduce((s,x,i)=>s+x*plane.v[i],0);
-    const ctx = detail.querySelector('canvas').getContext('2d');
-    ctx.clearRect(0,0,160,160);
-    state.registered.drawAorticSection(ctx,plane,(x,y)=>[80+(x-cx)*200,80+(y-cy)*200]);
-  }
+  $('#valve-detail').hidden = true;
+  if(state.scene.showCut && v.id==='psax_av') $('.patient-orientation').textContent += ' · Aortic leaflets unavailable in source model; see recorded clip';
   state.sector.draw(slices, view, { highlight: state.highlight,
     registered: state.registered, plane });
 

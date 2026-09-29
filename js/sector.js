@@ -123,8 +123,6 @@ export class SectorView {
 
     if (extras.registered && extras.plane) {
       this._drawRegistered(extras.registered, extras.plane, f, depth, sector);
-      extras.registered.drawValveSections(g, extras.plane,
-        (x,y)=>[f.ox+x*f.s*(this.opts.invert ? -1 : 1),f.oy+y*f.s], true);
     }
     const byId = new Map(slices.map((r) => [r.id, r]));
     const order = PAINT_ORDER.filter((id) => byId.has(id))
@@ -209,6 +207,7 @@ export class SectorView {
     for (let y = Math.max(0, Math.floor(f.oy)); y < Math.min(f.H, f.oy + depth * f.s); y += step) {
       const d = (y - f.oy) / f.s;
       const crossings = volume.wallIntervals(plane,d);
+      const tissues = volume.tissueIntervals(plane,d);
       const bound = Math.min(d * Math.tan(half), Math.sqrt(Math.max(0, depth * depth - d * d)));
       const x0 = Math.max(0, Math.floor(f.ox - bound * f.s));
       const x1 = Math.min(f.W, Math.ceil(f.ox + bound * f.s));
@@ -217,15 +216,15 @@ export class SectorView {
         const p = [o[0] + u[0] * lateral + v[0] * d,
                    o[1] + u[1] * lateral + v[1] * d,
                    o[2] + u[2] * lateral + v[2] * d];
-        const label = volume.sampleSection(p,lateral,crossings);
+        const label = volume.sampleSection(p,lateral,crossings,tissues);
         if (label === 1) continue;
-        if (label >= 2) this.registeredVisible.add(label);
-        const neighbor = volume.sample([p[0] + u[0] * volume.step,
+        if (label >= 2 && label <= 5) this.registeredVisible.add(label);
+        const neighbor = volume.sampleSection([p[0] + u[0] * volume.step,
                                         p[1] + u[1] * volume.step,
-                                        p[2] + u[2] * volume.step]);
+                                        p[2] + u[2] * volume.step],lateral+volume.step,crossings,tissues);
         const edge = neighbor !== label;
         const noise = this.opts.speckle ? (((x * 73 + y * 151) ^ (x * y * 13)) & 31) - 16 : 0;
-        const grey = Math.max(0, Math.min(255, (edge ? 179 : label === 0 ? 112 : 19) + noise));
+        const grey = Math.max(0, Math.min(255, (label === 6 ? 165 : edge ? 179 : label === 0 ? 112 : 19) + noise));
         for (let yy = y; yy < Math.min(y + step, f.H); yy++) for (let xx = x; xx < Math.min(x + step, f.W); xx++) {
           const at = (yy * f.W + xx) * 4;
           pix[at] = pix[at + 1] = pix[at + 2] = grey;
