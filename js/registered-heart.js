@@ -39,7 +39,8 @@ export class RegisteredHeart {
       target = id === 'psax_av' ? h.valves.av : id === 'psax_mv' ? h.valves.mv
         : add(h.apex,mul(sub(h.base,h.apex),fraction));
       const ray = unit(sub(target,contact));
-      normal = unit(sub(h.long_axis,mul(ray,dot(h.long_axis,ray))));
+      const axis = id === 'psax_av' ? h.aortic_root.axis : h.long_axis;
+      normal = unit(sub(axis,mul(ray,dot(axis,ray))));
     } else if (id === 'a4c' || id === 'sub_long') {
       const points = [seeds.lv,seeds.rv,seeds.la,seeds.ra];
       normal = bestPlaneNormal(contact,points);
@@ -73,6 +74,41 @@ export class RegisteredHeart {
     const k = Math.round((p[2] - this.origin[2]) / this.step);
     if (i < 0 || j < 0 || k < 0 || i >= nx || j >= ny || k >= nz) return 1;
     return this.labels[(i * ny + j) * nz + k];
+  }
+
+  aorticSectionVisible(plane) {
+    const root = this.frame.heart.aortic_root;
+    const distance = root.centre.reduce((s,x,i)=>s+(x-plane.origin[i])*plane.n[i],0);
+    const alignment = Math.abs(root.axis.reduce((s,x,i)=>s+x*plane.n[i],0));
+    return Math.abs(distance) < .12 && alignment > .8;
+  }
+
+  // Explicit educational reconstruction of a CLOSED trileaflet valve. The
+  // atlas has no AV leaflet mesh. Project its root-coordinate geometry into
+  // both displays, only near the basal valve plane; never follow the cursor.
+  drawAorticSection(ctx, plane, project, monochrome = false) {
+    if (!this.aorticSectionVisible(plane)) return false;
+    const root = this.frame.heart.aortic_root, axis = root.axis;
+    const cross = (a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+    const e = cross(axis,[0,0,1]), length = Math.hypot(...e);
+    const u = e.map(x=>x/length), v = cross(axis,u);
+    const at = (angle,radius) => {
+      const d = root.centre.map((x,i)=>x-plane.origin[i]+radius*(Math.cos(angle)*u[i]+Math.sin(angle)*v[i]));
+      return project(d.reduce((s,x,i)=>s+x*plane.u[i],0),d.reduce((s,x,i)=>s+x*plane.v[i],0));
+    };
+    const centre = at(0,0), edge = at(0,root.radius);
+    const scale = Math.hypot(edge[0]-centre[0],edge[1]-centre[1]);
+    ctx.save();
+    ctx.lineWidth = Math.max(1,scale*.07);
+    for (let cusp=0;cusp<3;cusp++) {
+      ctx.beginPath(); ctx.moveTo(...centre);
+      for(let k=0;k<=24;k++) ctx.lineTo(...at((cusp+k/24)*Math.PI*2/3,root.radius));
+      ctx.closePath();
+      ctx.fillStyle = monochrome ? ['#acaeb1','#c2c4c6','#95979b'][cusp] : ['#f4dec1','#dfc7a7','#cbb18f'][cusp];
+      ctx.fill(); ctx.strokeStyle = monochrome ? '#eeeeee' : '#fff0d9'; ctx.stroke();
+    }
+    ctx.restore();
+    return true;
   }
 
   fitSector(plane) {

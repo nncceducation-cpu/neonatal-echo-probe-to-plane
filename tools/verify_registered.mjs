@@ -14,6 +14,17 @@ const step = head.getFloat32(12, true);
 const dims = [16,20,24].map(i => head.getInt32(i, true));
 const heart = new RegisteredHeart(meta, frame, mesh, origin, step, dims, new Uint8Array(grid, 28));
 const views = readJson('data/views.json').views;
+const av = heart.adaptView(views.find(v=>v.id === 'psax_av'));
+const avNormal = [av.beam[1]*av.index[2]-av.beam[2]*av.index[1],av.beam[2]*av.index[0]-av.beam[0]*av.index[2],av.beam[0]*av.index[1]-av.beam[1]*av.index[0]];
+const avPlane = {origin:av.contact,u:av.index,v:av.beam,n:avNormal};
+if (!heart.aorticSectionVisible(avPlane)) throw Error('AV preset does not intersect the valve reconstruction');
+let cusps=0;
+const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){cusps++},stroke(){}};
+heart.drawAorticSection(context,avPlane,(x,y)=>[x,y]);
+if(cusps!==3) throw Error('Expected three cusp surfaces');
+const displaced = {...avPlane,origin:avPlane.origin.map((x,i)=>x+avNormal[i])};
+if(heart.aorticSectionVisible(displaced)) throw Error('AV should disappear away from its basal level');
+console.log('AV root intersection, three cusps and off-level exclusion — pass');
 const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 const visible = view => {
   const v = heart.adaptView(view), n = cross(v.beam,v.index);

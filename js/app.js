@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-3';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-3';
-import { SectorView, SHORT } from './sector.js?v=20260929-3';
-import { Scene3D } from './scene3d.js?v=20260929-3';
-import { Probe } from './probe.js?v=20260929-3';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-3';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-3';
+import { buildStructures } from './geom.js?v=20260929-4';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-4';
+import { SectorView, SHORT } from './sector.js?v=20260929-4';
+import { Scene3D } from './scene3d.js?v=20260929-4';
+import { Probe } from './probe.js?v=20260929-4';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-4';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-4';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -118,6 +118,12 @@ function selectView(id, initial = false) {
   });
   renderInfo();
   showReference(id);
+  if (!initial && id === 'psax_av' && state.mode !== 'quiz') {
+    $('#stage2d').classList.add('reference-mode');
+    $('#echo-study-video').play().catch(() => {
+      // Native video controls remain available if autoplay is blocked.
+    });
+  }
   update();
   state.scene.focusPlane(state.probe.plane());
 }
@@ -423,7 +429,10 @@ function update() {
   $('.patient-orientation').textContent = state.scene.showCut && state.scene.followCut
     ? `Cut-face view · ${referenceMode ? 'recorded-view orientation' : 'live-section orientation'} · beam ${state.scene.referenceReverseDepth ? '↑' : '↓'}`
     : state.scene.showCut ? 'Free camera · return to Mouse: slice to face the cut'
-    : 'Supine · overhead · head ↑';
+      : 'Supine · overhead · head ↑';
+  if (state.scene.showCut && state.registered?.aorticSectionVisible(plane)) {
+    $('.patient-orientation').textContent += ' · AV: three closed cusps (teaching reconstruction)';
+  }
   state.sector.draw(slices, view, { highlight: state.highlight,
     registered: state.registered, plane });
 
