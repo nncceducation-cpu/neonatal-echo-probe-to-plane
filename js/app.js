@@ -97,6 +97,7 @@ function buildControls() {
   $('#mode-guided').onclick = () => setMode('guided');
   $('#mode-free').onclick = () => setMode('free');
   $('#mode-quiz').onclick = () => setMode('quiz');
+  $('#quiz-next').onclick = () => newQuiz();
 
   const bind = (sel, fn) => { $(sel).onclick = () => { fn(); update(); }; };
   bind('#rot-ccw', () => state.probe.rotate(-7.5));

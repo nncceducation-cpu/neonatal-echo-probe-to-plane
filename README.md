@@ -128,6 +128,7 @@ Verification runs **the app's own code**, not a re-implementation:
 
 ```
 python tools/verify_planes.py            # 21/21 views pass
+python tools/smoke_test.py               # 16/16 checks pass
 python tools/contact_sheet.py            # -> docs/contact_sheet.svg
 python tools/render_png.py               # -> docs/contact_sheet.png
 ```
@@ -142,6 +143,20 @@ still satisfies the geometric contract it was built from.
 That the check is against the sector rather than the infinite plane matters: a
 real image is a limited fan, and several views only make sense once you stop
 asking "does the plane cross this structure" and start asking "is it on screen".
+
+`smoke_test.py` stands in for a browser as far as anything can without one. It
+checks that every element id `app.js` reaches for exists in `index.html` and
+that nothing is wired but unused; that every `THREE.*` symbol `scene3d.js` uses
+is actually exported by the vendored build, including the two chained calls it
+assumes return `this`; and then it loads the geometry, slicing, probe and sector
+modules behind a stubbed 2-D canvas and **runs** them — building the anatomy,
+slicing all 21 views, drawing each one twice with every display option flipped,
+and putting the probe through every manoeuvre from every view.
+
+Two of its assertions are there to stop a specific mistake coming back:
+**rocking must leave the imaging plane bit-for-bit unchanged, and sweeping must
+change it.** Those two manoeuvres are easy to conflate in code as well as at
+the bedside, and if they are ever conflated again the test fails.
 
 ## Honest limitations
 
@@ -171,10 +186,12 @@ asking "does the plane cross this structure" and start asking "is it on screen".
 * Probe control is by **buttons and keys** rather than dragging the probe over
   the chest.
 * The page was **not** loaded in a browser during authoring — no browser could
-  be installed in the build sandbox. The geometry is verified programmatically
-  and the module graph checked statically (imports resolve, exports match,
-  every module parses), but the rendering itself is unverified. If anything
-  fails to draw, that is the first place to look.
+  be installed in the build sandbox. What *is* verified without one: the plane
+  geometry of all 21 views, the DOM and three.js contracts, and the actual
+  execution of the geometry, slicing, probe and 2-D sector code behind a
+  stubbed canvas (`tools/smoke_test.py`). What is **not**: WebGL rendering,
+  three.js scene construction, and layout. So if something fails to draw, the
+  3-D panel is the first place to look — the echo panel's logic has been run.
 
 A teaching model. **Not a diagnostic tool, and not patient data.**
 
