@@ -101,11 +101,14 @@ export class RegisteredHeart {
     ctx.save();
     ctx.lineWidth = Math.max(1,scale*.07);
     for (let cusp=0;cusp<3;cusp++) {
+      const start = cusp*Math.PI*2/3, end = (cusp+1)*Math.PI*2/3;
       ctx.beginPath(); ctx.moveTo(...centre);
+      ctx.quadraticCurveTo(...at(start+.18,root.radius*.52),...at(start,root.radius));
       for(let k=0;k<=24;k++) ctx.lineTo(...at((cusp+k/24)*Math.PI*2/3,root.radius));
+      ctx.quadraticCurveTo(...at(end+.18,root.radius*.52),...centre);
       ctx.closePath();
       ctx.fillStyle = monochrome ? ['#acaeb1','#c2c4c6','#95979b'][cusp] : ['#f4dec1','#dfc7a7','#cbb18f'][cusp];
-      ctx.fill(); ctx.strokeStyle = monochrome ? '#eeeeee' : '#fff0d9'; ctx.stroke();
+      ctx.fill(); ctx.strokeStyle = monochrome ? '#eeeeee' : '#614939'; ctx.stroke();
     }
     ctx.restore();
     return true;

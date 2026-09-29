@@ -19,7 +19,7 @@ const avNormal = [av.beam[1]*av.index[2]-av.beam[2]*av.index[1],av.beam[2]*av.in
 const avPlane = {origin:av.contact,u:av.index,v:av.beam,n:avNormal};
 if (!heart.aorticSectionVisible(avPlane)) throw Error('AV preset does not intersect the valve reconstruction');
 let cusps=0;
-const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){cusps++},stroke(){}};
+const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},closePath(){},fill(){cusps++},stroke(){}};
 heart.drawAorticSection(context,avPlane,(x,y)=>[x,y]);
 if(cusps!==3) throw Error('Expected three cusp surfaces');
 const displaced = {...avPlane,origin:avPlane.origin.map((x,i)=>x+avNormal[i])};

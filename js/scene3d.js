@@ -6,8 +6,8 @@
 
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
-import { PAINT_ORDER } from './sector.js?v=20260929-4';
-import { torsoSurface } from './body.js?v=20260929-4';
+import { PAINT_ORDER } from './sector.js?v=20260929-5';
+import { torsoSurface } from './body.js?v=20260929-5';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
 const COLOR = {
@@ -204,7 +204,8 @@ export class Scene3D {
     const surfaceMode = !!this.surface && !this.showCut;
     if (this.surface) this.surface.visible = surfaceMode;
     if (this.registered) this.registered.visible = !surfaceMode;
-    this.probe.visible = !surfaceMode;
+    // Probe is displayed in the linked torso panel, not over the cut close-up.
+    this.probe.visible = false;
     this.overlay.visible = !surfaceMode;
     this.torso.visible = !!this.showTorso && !(this.showCut && this.followCut);
     this.windowDots.visible = !surfaceMode && this.torso.visible;
@@ -353,8 +354,7 @@ export class Scene3D {
       this.camera.up.set(...plane.v).negate();
       if (this.referenceReverseDepth) this.camera.up.negate();
       const myocardium = this.registered?.children.find(m => m.userData.id === 'myo');
-      const box = new THREE.Box3().setFromObject(myocardium || this.bodies)
-        .union(new THREE.Box3().setFromObject(this.probe));
+      const box = new THREE.Box3().setFromObject(myocardium || this.bodies);
       const side = (this.sliceInvert ? -1 : 1) * (this.referenceReverseDepth ? -1 : 1);
       this.fitBox(box, new THREE.Vector3(...plane.n).multiplyScalar(side));
       return;
@@ -453,8 +453,37 @@ export class Scene3D {
     this.camera.updateProjectionMatrix();
   }
 
+  attachOverview(canvas) {
+    this.overviewRenderer = new THREE.WebGLRenderer({canvas,antialias:true});
+    this.overviewRenderer.setPixelRatio(Math.min(2,window.devicePixelRatio || 1));
+    this.overviewRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.overviewRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.overviewRenderer.toneMappingExposure = 1.25;
+    this.overviewCamera = new THREE.PerspectiveCamera(38,1,.1,200);
+    this.overviewCamera.up.set(0,1,0);
+  }
+
+  resizeOverview(w,h) {
+    this.overviewRenderer.setSize(w,h,false);
+    this.overviewCamera.aspect = w/Math.max(h,1);
+    this.overviewCamera.updateProjectionMatrix();
+    const distance = 8 / Math.tan(19*Math.PI/180) / Math.min(1,w/Math.max(h,1));
+    this.overviewCamera.position.set(1,-1, distance);
+    this.overviewCamera.lookAt(0,-3,-2);
+  }
+
   render() {
     this.controls.update();
+    if (this.overviewRenderer) {
+      const objects = [this.torso,this.windowDots,this.probe,this.overlay,this.caps,this.surface,this.registered,this.bodies].filter(Boolean);
+      const previous = objects.map(o=>o.visible);
+      this.torso.visible = this.windowDots.visible = this.probe.visible = this.overlay.visible = true;
+      this.caps.visible = false;
+      if(this.surface) this.surface.visible = false;
+      if(this.registered) this.registered.visible = true;
+      this.overviewRenderer.render(this.scene,this.overviewCamera);
+      objects.forEach((o,i)=>o.visible=previous[i]);
+    }
     this.renderer.render(this.scene, this.camera);
   }
 }

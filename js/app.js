@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-4';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-4';
-import { SectorView, SHORT } from './sector.js?v=20260929-4';
-import { Scene3D } from './scene3d.js?v=20260929-4';
-import { Probe } from './probe.js?v=20260929-4';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-4';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-4';
+import { buildStructures } from './geom.js?v=20260929-5';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-5';
+import { SectorView, SHORT } from './sector.js?v=20260929-5';
+import { Scene3D } from './scene3d.js?v=20260929-5';
+import { Probe } from './probe.js?v=20260929-5';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-5';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-5';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -37,6 +37,7 @@ async function boot() {
                           'flow', 'context']);
 
   state.scene = new Scene3D($('#c3d'), anatomy, state.structures);
+  state.scene.attachOverview($('#c-torso'));
   state.sector = new SectorView($('#c2d'));
   try {
     state.registered = await RegisteredHeart.load();
@@ -186,6 +187,7 @@ function buildControls() {
   const move = (sweep, rotation) => {
     activateSection(); state.probe.sweep(sweep); state.probe.rotate(rotation); update();
   };
+  for (const canvas of [$('#c3d'),$('#c-torso')]) {
   canvas.style.touchAction = 'none';
   canvas.addEventListener('pointerdown', e => {
     if (!slicing || e.button !== 0) return;
@@ -201,6 +203,7 @@ function buildControls() {
     if (!slicing) return;
     e.preventDefault(); move(Math.max(-3,Math.min(3,e.deltaY*.035)),0);
   }, {passive:false});
+  }
   const reference = $('#scan-reference');
   $('#scan-reference-image').remove();
   const video = el('video');
@@ -433,6 +436,17 @@ function update() {
   if (state.scene.showCut && state.registered?.aorticSectionVisible(plane)) {
     $('.patient-orientation').textContent += ' · AV: three closed cusps (teaching reconstruction)';
   }
+  const detail = $('#valve-detail');
+  detail.hidden = !(state.scene.showCut && state.registered?.aorticSectionVisible(plane));
+  if (!detail.hidden) {
+    const root = state.registered.frame.heart.aortic_root;
+    const offset = root.centre.map((x,i)=>x-plane.origin[i]);
+    const cx = offset.reduce((s,x,i)=>s+x*plane.u[i],0);
+    const cy = offset.reduce((s,x,i)=>s+x*plane.v[i],0);
+    const ctx = detail.querySelector('canvas').getContext('2d');
+    ctx.clearRect(0,0,160,160);
+    state.registered.drawAorticSection(ctx,plane,(x,y)=>[80+(x-cx)*200,80+(y-cy)*200]);
+  }
   state.sector.draw(slices, view, { highlight: state.highlight,
     registered: state.registered, plane });
 
@@ -505,6 +519,8 @@ function renderInfo() {
 function layout() {
   const a = $('#stage3d');
   state.scene.resize(a.clientWidth, a.clientHeight);
+  const torso = $('#stage-torso');
+  state.scene.resizeOverview(torso.clientWidth,torso.clientHeight);
   const c = $('#c2d');
   const box = $('#stage2d');
   const r = Math.min(2, window.devicePixelRatio || 1);
