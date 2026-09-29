@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js';
-import { sliceAll, loopInSector } from './slicer.js';
-import { SectorView, SHORT } from './sector.js';
-import { Scene3D } from './scene3d.js';
-import { Probe } from './probe.js';
-import { RegisteredHeart } from './registered-heart.js';
-import { echoReferences, referenceMatches } from './echo-references.js';
+import { buildStructures } from './geom.js?v=20260929-2';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-2';
+import { SectorView, SHORT } from './sector.js?v=20260929-2';
+import { Scene3D } from './scene3d.js?v=20260929-2';
+import { Probe } from './probe.js?v=20260929-2';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-2';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-2';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {

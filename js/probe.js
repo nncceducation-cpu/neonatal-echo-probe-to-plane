@@ -19,8 +19,8 @@
 //   rotate   turn the transducer about the beam axis      (changes the section)
 //   depth    the machine's depth setting                  (changes the sector)
 
-import { add, sub, mul, dot, cross, unit } from './geom.js';
-import { skinAt } from './body.js';
+import { add, sub, mul, dot, cross, unit } from './geom.js?v=20260929-2';
+import { skinAt } from './body.js?v=20260929-2';
 
 const DEG = Math.PI / 180;
 
