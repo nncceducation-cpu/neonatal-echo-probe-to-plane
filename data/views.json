@@ -1,0 +1,1745 @@
+{
+ "convention": {
+  "index_mark": "index mark maps to the RIGHT of the displayed image (cardiology convention)",
+  "clock": "12 o'clock = cephalad, 3 = patient left, 9 = patient right",
+  "image_vertical": "transducer face at the top of the sector; depth increases downward along the beam"
+ },
+ "windows": {
+  "ssn": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "sternal_angle": [
+   0.0,
+   -0.9,
+   0.55
+  ],
+  "mid_sternum": [
+   0.0,
+   -2.4,
+   0.75
+  ],
+  "xiphisternum": [
+   0.0,
+   -4.7,
+   0.55
+  ],
+  "ps2": [
+   1.1,
+   -1.7,
+   0.85
+  ],
+  "ps3": [
+   1.25,
+   -2.7,
+   0.95
+  ],
+  "ps4": [
+   1.35,
+   -3.6,
+   0.9
+  ],
+  "rps4": [
+   -1.3,
+   -3.6,
+   0.85
+  ],
+  "apical": [
+   2.75,
+   -4.35,
+   0.35
+  ],
+  "subcostal": [
+   0.0,
+   -5.5,
+   0.15
+  ],
+  "high_ps": [
+   0.95,
+   -1.15,
+   0.75
+  ],
+  "supra": [
+   0.0,
+   0.15,
+   -0.1
+  ]
+ },
+ "views": [
+  {
+   "id": "plax",
+   "name": "Parasternal long axis (PLAX)",
+   "window": "ps3",
+   "window_label": "Left 3rd intercostal space, parasternal",
+   "family": "long_axis",
+   "section": "long_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 0,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    1.2869,
+    -2.6718,
+    0.9383
+   ],
+   "window_nominal": [
+    1.25,
+    -2.7,
+    0.95
+   ],
+   "beam": [
+    -0.4813,
+    0.2852,
+    -0.8288
+   ],
+   "index": [
+    -0.4176,
+    0.7567,
+    0.5029
+   ],
+   "normal": [
+    0.7706,
+    0.5882,
+    -0.2451
+   ],
+   "index_toward": "toward the head, and somewhat toward the chest wall (anterior)",
+   "clock_computed": 11,
+   "clock_deg": 324.2,
+   "clock_stated": null,
+   "depth": 4.5,
+   "sector": 70,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 0.5,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 0.0,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "la",
+    "mv",
+    "av",
+    "aorta",
+    "rv",
+    "ivs"
+   ],
+   "absent": [
+    "tv",
+    "ra"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Left 3rd intercostal space, immediately lateral to the sternum. Index mark to the patient's right shoulder. The plane is the heart's own long axis, so the beam runs from the RV anteriorly, through the septum and LV cavity, to the LA and aortic root posteriorly.",
+   "pitfall": "Sliding too lateral foreshortens the LV and drops the aortic root out of plane. If you see the tricuspid valve you have rotated toward the RV inflow, not the LV long axis.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "LA:Ao ratio",
+    "LV dimensions for fractional shortening"
+   ]
+  },
+  {
+   "id": "plax_rv_in",
+   "name": "PLAX - RV inflow (RV inlet sweep)",
+   "window": "ps3",
+   "window_label": "Left 3rd intercostal space, parasternal",
+   "family": "oblique",
+   "section": "oblique_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "points",
+    "a": "tv",
+    "b": "ra"
+   },
+   "aim": "tv",
+   "contact": [
+    1.25,
+    -2.7,
+    0.95
+   ],
+   "window_nominal": [
+    1.25,
+    -2.7,
+    0.95
+   ],
+   "beam": [
+    -0.7504,
+    0.0202,
+    -0.6607
+   ],
+   "index": [
+    0.1164,
+    0.988,
+    -0.102
+   ],
+   "normal": [
+    0.6507,
+    -0.1534,
+    -0.7437
+   ],
+   "index_toward": "toward the head",
+   "clock_computed": 12,
+   "clock_deg": 8.0,
+   "clock_stated": null,
+   "depth": 4.5,
+   "sector": 70,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 18.0,
+    "nearest_section": "four_chamber",
+    "nearest_section_deg": 41.8
+   },
+   "expect": [
+    "rv",
+    "ra",
+    "tv"
+   ],
+   "absent": [
+    "lv",
+    "mv"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "From PLAX, tilt the beam inferiorly and medially (toward the patient's right hip) without rotating. The LV drops away and the tricuspid valve, RA and RV inlet come into plane.",
+   "pitfall": "This is a tilt, not a rotation. Rotating instead gives a short axis.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Tricuspid regurgitation jet for RV pressure"
+   ]
+  },
+  {
+   "id": "plax_rv_out",
+   "name": "PLAX - RV outflow sweep",
+   "window": "ps2",
+   "window_label": "Left 2nd intercostal space, parasternal",
+   "family": "oblique",
+   "section": "oblique_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "points",
+    "a": "pv",
+    "b": "mpa_bif"
+   },
+   "aim": "pv",
+   "contact": [
+    1.1,
+    -1.7,
+    0.85
+   ],
+   "window_nominal": [
+    1.1,
+    -1.7,
+    0.85
+   ],
+   "beam": [
+    -0.6885,
+    0.3051,
+    -0.658
+   ],
+   "index": [
+    -0.0672,
+    0.8765,
+    0.4767
+   ],
+   "normal": [
+    0.7222,
+    0.3724,
+    -0.5829
+   ],
+   "index_toward": "toward the head, and somewhat toward the chest wall (anterior)",
+   "clock_computed": 12,
+   "clock_deg": 348.0,
+   "clock_stated": null,
+   "depth": 3.6,
+   "sector": 70,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 4.9,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 23.3,
+    "vessel_axis_offset_mm": 0.0
+   },
+   "expect": [
+    "rv",
+    "pv",
+    "mpa"
+   ],
+   "absent": [
+    "tv"
+   ],
+   "vessel_axis": [
+    [
+     "mpa",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "From PLAX, tilt the beam superiorly and slightly laterally (toward the patient's left shoulder) to line up the RV outflow tract, pulmonary valve and main pulmonary artery.",
+   "pitfall": "Too steep a tilt and the MPA is cut obliquely, overestimating its size.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Pulmonary valve Doppler",
+    "RVO measurement"
+   ]
+  },
+  {
+   "id": "psax_av",
+   "name": "Parasternal short axis - aortic valve level",
+   "window": "ps3",
+   "window_label": "Left 3rd intercostal space, parasternal",
+   "family": "short_axis",
+   "section": "short_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_short",
+    "aim": "psax_av"
+   },
+   "aim": "psax_av",
+   "contact": [
+    -0.2771,
+    -0.9954,
+    0.2398
+   ],
+   "window_nominal": [
+    1.25,
+    -2.7,
+    0.95
+   ],
+   "beam": [
+    -0.0961,
+    -0.455,
+    -0.8853
+   ],
+   "index": [
+    0.7646,
+    0.5357,
+    -0.3583
+   ],
+   "normal": [
+    0.6373,
+    -0.7114,
+    0.2964
+   ],
+   "index_toward": "toward the patient's left, and somewhat toward the head",
+   "clock_computed": 2,
+   "clock_deg": 57.0,
+   "clock_stated": null,
+   "depth": 4.0,
+   "sector": 70,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 24.0,
+    "aim_offset_mm": 0.0,
+    "level_from_apex_mm": 35.9,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "av",
+    "ra",
+    "la",
+    "ias",
+    "rvot",
+    "aorta"
+   ],
+   "absent": [
+    "mv"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "From PLAX, rotate the probe 90 degrees clockwise so the index mark points to the patient's left shoulder. The aortic valve appears centrally as the tri-leaflet 'Mercedes' sign.",
+   "pitfall": "The circle of the aorta must be round. If it is oval you are still cutting obliquely - rotate a few more degrees.",
+   "limitation": "In a real basal cut the tricuspid and pulmonary valves flank the aorta, because the operator tilts slightly off a pure short axis to catch them. This model renders the exact short-axis plane at the aortic valve level, which passes above the tricuspid funnel, so the tricuspid valve is not drawn here. Use the four-chamber or RV-inflow view for it.",
+   "source": null,
+   "teaches": [
+    "Tri-leaflet aortic valve",
+    "Interatrial septum and shunt direction"
+   ]
+  },
+  {
+   "id": "psax_mv",
+   "name": "Parasternal short axis - mitral valve level",
+   "window": "ps3",
+   "window_label": "Left 3rd intercostal space, parasternal",
+   "family": "short_axis",
+   "section": "short_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_short",
+    "aim": "psax_mv"
+   },
+   "aim": "psax_mv",
+   "contact": [
+    0.1013,
+    -1.4178,
+    0.4158
+   ],
+   "window_nominal": [
+    1.25,
+    -2.7,
+    0.95
+   ],
+   "beam": [
+    0.0195,
+    -0.3696,
+    -0.929
+   ],
+   "index": [
+    0.7704,
+    0.5978,
+    -0.2216
+   ],
+   "normal": [
+    0.6373,
+    -0.7114,
+    0.2964
+   ],
+   "index_toward": "toward the patient's left, and somewhat toward the head",
+   "clock_computed": 2,
+   "clock_deg": 53.3,
+   "clock_stated": null,
+   "depth": 4.0,
+   "sector": 70,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 18.0,
+    "aim_offset_mm": 0.0,
+    "level_from_apex_mm": 30.0,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "mv",
+    "lv",
+    "rv"
+   ],
+   "absent": [
+    "av"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Hold the short-axis rotation and tilt the beam toward the apex (inferolaterally) until the mitral leaflets open as a 'fish mouth'.",
+   "pitfall": "Tilting rather than sliding keeps the same window; sliding laterally loses the parasternal window altogether.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Mitral leaflet motion"
+   ]
+  },
+  {
+   "id": "psax_pap",
+   "name": "Parasternal short axis - mid-papillary",
+   "window": "ps4",
+   "window_label": "Left 4th intercostal space, parasternal",
+   "family": "short_axis",
+   "section": "short_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_short",
+    "aim": "psax_pap"
+   },
+   "aim": "psax_pap",
+   "contact": [
+    0.9411,
+    -3.1435,
+    0.7098
+   ],
+   "window_nominal": [
+    1.35,
+    -3.6,
+    0.9
+   ],
+   "beam": [
+    0.2389,
+    -0.1832,
+    -0.9536
+   ],
+   "index": [
+    0.7327,
+    0.6785,
+    0.0532
+   ],
+   "normal": [
+    0.6373,
+    -0.7114,
+    0.2964
+   ],
+   "index_toward": "toward the patient's left, and somewhat toward the head",
+   "clock_computed": 2,
+   "clock_deg": 45.4,
+   "clock_stated": null,
+   "depth": 4.0,
+   "sector": 70,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 6.4,
+    "aim_offset_mm": 0.0,
+    "level_from_apex_mm": 11.5,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "rv",
+    "ivs",
+    "pap_al",
+    "pap_pm"
+   ],
+   "absent": [
+    "mv",
+    "av",
+    "la"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Continue tilting toward the apex until both papillary muscles are seen inside a circular LV cavity.",
+   "pitfall": "This is the level for eyeballing regional wall motion and the 'kissing ventricles' of a severely underfilled heart.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Visual LV function",
+    "Kissing ventricles in hypovolaemia",
+    "Septal flattening in pulmonary hypertension"
+   ]
+  },
+  {
+   "id": "psax_apical",
+   "name": "Parasternal short axis - apical level",
+   "window": "ps4",
+   "window_label": "Left 4th intercostal space, parasternal",
+   "family": "short_axis",
+   "section": "short_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_short",
+    "aim": "psax_apical"
+   },
+   "aim": "psax_apical",
+   "contact": [
+    1.3234,
+    -3.5704,
+    0.8876
+   ],
+   "window_nominal": [
+    1.35,
+    -3.6,
+    0.9
+   ],
+   "beam": [
+    0.239,
+    -0.1832,
+    -0.9536
+   ],
+   "index": [
+    0.7327,
+    0.6785,
+    0.0532
+   ],
+   "normal": [
+    0.6373,
+    -0.7114,
+    0.2964
+   ],
+   "index_toward": "toward the patient's left, and somewhat toward the head",
+   "clock_computed": 2,
+   "clock_deg": 45.4,
+   "clock_stated": null,
+   "depth": 3.5,
+   "sector": 70,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 0.4,
+    "aim_offset_mm": 0.0,
+    "level_from_apex_mm": 5.5,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "rv"
+   ],
+   "absent": [
+    "mv",
+    "av",
+    "la",
+    "ra"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "The most apical short-axis cut; the LV cavity is small and the RV has almost disappeared.",
+   "pitfall": "Easy to mistake a foreshortened oblique cut for a true apical level.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Apical wall motion"
+   ]
+  },
+  {
+   "id": "psax_pda",
+   "name": "Parasternal short axis - ductal cut (PDA)",
+   "window": "high_ps",
+   "window_label": "High left parasternal (ductal)",
+   "family": "vessel",
+   "section": "vessel_short_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "contain_axis": false,
+    "axes": [
+     [
+      "pda",
+      [
+       0,
+       3
+      ]
+     ],
+     [
+      "mpa",
+      [
+       1,
+       3
+      ]
+     ],
+     [
+      "lpa",
+      [
+       0,
+       2
+      ]
+     ]
+    ]
+   },
+   "aim": "duct",
+   "contact": [
+    0.95,
+    -1.15,
+    0.75
+   ],
+   "window_nominal": [
+    0.95,
+    -1.15,
+    0.75
+   ],
+   "beam": [
+    -0.4567,
+    0.1732,
+    -0.8726
+   ],
+   "index": [
+    -0.6684,
+    0.5805,
+    0.4651
+   ],
+   "normal": [
+    0.5871,
+    0.7956,
+    -0.1493
+   ],
+   "index_toward": "toward the patient's right, and somewhat toward the head",
+   "clock_computed": 10,
+   "clock_deg": 305.8,
+   "clock_stated": null,
+   "depth": 4.0,
+   "sector": 70,
+   "image_right": "cephalad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.3,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 16.9,
+    "vessel_axis_offset_mm": 1.9
+   },
+   "expect": [
+    "mpa",
+    "lpa",
+    "pda",
+    "aorta",
+    "rpa"
+   ],
+   "absent": [
+    "lv",
+    "mv"
+   ],
+   "vessel_axis": [
+    [
+     "pda",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "From the aortic-valve short axis, slide one interspace higher and angle the beam toward the patient's left shoulder. The MPA, its bifurcation and the duct entering the descending aorta line up as the 'three-legged' ductal view.",
+   "pitfall": "The duct is often mistaken for the LPA. Follow the MPA to its bifurcation first, then look posteriorly for the third limb.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Duct patency and size at the pulmonary end",
+    "Shunt direction and peak velocity"
+   ]
+  },
+  {
+   "id": "a4c",
+   "name": "Apical four chamber",
+   "window": "apical",
+   "window_label": "Cardiac apex, left 4th-5th interspace",
+   "family": "long_axis",
+   "section": "four_chamber",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 90,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    2.75,
+    -4.6192,
+    -0.2962
+   ],
+   "window_nominal": [
+    2.75,
+    -4.35,
+    0.35
+   ],
+   "beam": [
+    -0.6888,
+    0.6692,
+    -0.2788
+   ],
+   "index": [
+    0.725,
+    0.6358,
+    -0.2649
+   ],
+   "normal": [
+    0.0,
+    -0.3846,
+    -0.9231
+   ],
+   "index_toward": "toward the patient's left, and somewhat toward the head",
+   "clock_computed": 2,
+   "clock_deg": 47.9,
+   "clock_stated": null,
+   "depth": 5.0,
+   "sector": 75,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 7.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 90.0,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "rv",
+    "la",
+    "ra",
+    "mv",
+    "tv",
+    "ivs",
+    "ias"
+   ],
+   "absent": [
+    "av",
+    "pv",
+    "mpa"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Probe over the apex beat, left 4th-5th interspace, index mark to the patient's left (3 o'clock). The beam runs from apex to base along the long axis, and the plane contains both AV valves.",
+   "pitfall": "The commonest error is foreshortening: sliding medially puts the beam off the true apex and shortens the LV. The LV should be the longest chamber and its apex should sit at the top of the sector.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Chamber size and symmetry",
+    "Transmitral E/A ratio",
+    "TAPSE",
+    "Visual biventricular function"
+   ]
+  },
+  {
+   "id": "a5c",
+   "name": "Apical five chamber",
+   "window": "apical",
+   "window_label": "Cardiac apex, left 4th-5th interspace",
+   "family": "oblique",
+   "section": "four_chamber",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "points",
+    "a": "apex",
+    "b": "av"
+   },
+   "aim": "av",
+   "contact": [
+    2.75,
+    -4.35,
+    0.35
+   ],
+   "window_nominal": [
+    2.75,
+    -4.35,
+    0.35
+   ],
+   "beam": [
+    -0.7212,
+    0.6225,
+    -0.3039
+   ],
+   "index": [
+    0.1663,
+    0.5815,
+    0.7964
+   ],
+   "normal": [
+    0.6724,
+    0.5238,
+    -0.5229
+   ],
+   "index_toward": "toward the chest wall (anterior), and somewhat toward the head",
+   "clock_computed": 11,
+   "clock_deg": 332.9,
+   "clock_stated": null,
+   "depth": 5.0,
+   "sector": 75,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 3.3,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 17.3
+   },
+   "expect": [
+    "lv",
+    "rv",
+    "la",
+    "ra",
+    "av",
+    "aorta",
+    "lvot"
+   ],
+   "absent": [
+    "tv",
+    "pda"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "From the four chamber, tilt the beam anteriorly (toward the chest wall). The aortic valve and LVOT appear in the centre of the sector, making the 'fifth chamber'.",
+   "pitfall": "Tilt, do not rotate. Over-tilting loses the atria.",
+   "limitation": "The five-chamber plane cannot both contain the heart's long axis and pass through the aortic valve - the valve sits about 23 degrees off the long-axis plane. So this view is a genuine anterior TILT rather than a rotation, and it buys the aorta at the cost of the tricuspid valve, which drops out of plane. The RV outflow tract appears at the anterior edge.",
+   "source": null,
+   "teaches": [
+    "LVOT Doppler for left ventricular output"
+   ]
+  },
+  {
+   "id": "a3c",
+   "name": "Apical three chamber (apical long axis)",
+   "window": "apical",
+   "window_label": "Cardiac apex, left 4th-5th interspace",
+   "family": "long_axis",
+   "section": "long_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 0,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    2.5307,
+    -4.5174,
+    0.4197
+   ],
+   "window_nominal": [
+    2.75,
+    -4.35,
+    0.35
+   ],
+   "beam": [
+    -0.6283,
+    0.6371,
+    -0.4466
+   ],
+   "index": [
+    -0.1065,
+    0.4981,
+    0.8605
+   ],
+   "normal": [
+    0.7706,
+    0.5882,
+    -0.2451
+   ],
+   "index_toward": "toward the chest wall (anterior), and somewhat toward the head",
+   "clock_computed": 10,
+   "clock_deg": 314.1,
+   "clock_stated": null,
+   "depth": 5.0,
+   "sector": 75,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 2.8,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 0.0,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "la",
+    "mv",
+    "av",
+    "aorta"
+   ],
+   "absent": [
+    "tv",
+    "ra"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "From the four chamber, rotate the probe counter-clockwise about the beam until the aortic root appears alongside the mitral valve. This is the same cardiac long-axis section as PLAX, seen from the apex instead of the parasternum.",
+   "pitfall": "This view aligns the beam with LVOT flow, so it is the view of choice for left ventricular output; a poorly aligned beam underestimates the velocity time integral.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Left ventricular output (VTI x CSA x HR)"
+   ]
+  },
+  {
+   "id": "a2c",
+   "name": "Apical two chamber",
+   "window": "apical",
+   "window_label": "Cardiac apex, left 4th-5th interspace",
+   "family": "long_axis",
+   "section": "long_axis_family",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 135,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    2.3706,
+    -4.8289,
+    0.0162
+   ],
+   "window_nominal": [
+    2.75,
+    -4.35,
+    0.35
+   ],
+   "beam": [
+    -0.597,
+    0.7198,
+    -0.3543
+   ],
+   "index": [
+    -0.5888,
+    -0.0932,
+    0.8029
+   ],
+   "normal": [
+    0.5449,
+    0.6879,
+    0.4794
+   ],
+   "index_toward": "toward the chest wall (anterior), and somewhat toward the patient's right",
+   "clock_computed": 9,
+   "clock_deg": 267.2,
+   "clock_stated": null,
+   "depth": 5.0,
+   "sector": 75,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 7.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 135.0,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 45.0
+   },
+   "expect": [
+    "lv",
+    "la",
+    "mv"
+   ],
+   "absent": [
+    "ra",
+    "tv"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Continue rotating from the three chamber until only the LV and LA remain, with the anterior and inferior LV walls facing each other.",
+   "pitfall": "Rotation must be about the beam axis; drifting off the apex foreshortens the ventricle.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Anterior and inferior LV wall motion"
+   ]
+  },
+  {
+   "id": "sub_long",
+   "name": "Subcostal long axis (four-chamber equivalent)",
+   "window": "subcostal",
+   "window_label": "Subxiphoid (subcostal)",
+   "family": "long_axis",
+   "section": "four_chamber",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 90,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    0.0,
+    -5.5281,
+    0.0825
+   ],
+   "window_nominal": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "beam": [
+    -0.0251,
+    0.9228,
+    -0.3845
+   ],
+   "index": [
+    0.9997,
+    0.0232,
+    -0.0096
+   ],
+   "normal": [
+    0.0,
+    -0.3846,
+    -0.9231
+   ],
+   "index_toward": "toward the patient's left",
+   "clock_computed": 3,
+   "clock_deg": 89.2,
+   "clock_stated": null,
+   "depth": 6.0,
+   "sector": 80,
+   "image_right": "patient_left",
+   "metrics": {
+    "window_shift_mm": 0.7,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 90.0,
+    "nearest_section": "four_chamber",
+    "nearest_section_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "rv",
+    "la",
+    "ra",
+    "mv",
+    "tv",
+    "liver"
+   ],
+   "absent": [
+    "pv"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Probe flat in the subxiphoid hollow, angled steeply cephalad so the beam passes up through the liver into the heart. Gives a four-chamber-equivalent plane from below.",
+   "pitfall": "The liver is the acoustic window, so keep the beam angled, not pressed. This window survives when the parasternal window is lost to lung, and is the workhorse when the chest is not accessible.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Chamber size when the precordium is unavailable",
+    "Atrial septal anatomy"
+   ]
+  },
+  {
+   "id": "sub_lvot",
+   "name": "Subcostal long axis - aorta / LV outflow",
+   "window": "subcostal",
+   "window_label": "Subxiphoid (subcostal)",
+   "family": "long_axis",
+   "section": "long_axis",
+   "strict_section": true,
+   "plane_rule": {
+    "kind": "aim_long",
+    "phi": 0,
+    "aim": "base"
+   },
+   "aim": "base",
+   "contact": [
+    1.8975,
+    -4.0517,
+    -0.4535
+   ],
+   "window_nominal": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "beam": [
+    -0.6371,
+    0.7022,
+    -0.3178
+   ],
+   "index": [
+    -0.0148,
+    0.4011,
+    0.9159
+   ],
+   "normal": [
+    0.7706,
+    0.5882,
+    -0.2451
+   ],
+   "index_toward": "toward the chest wall (anterior)",
+   "clock_computed": 12,
+   "clock_deg": 359.0,
+   "clock_stated": null,
+   "depth": 6.0,
+   "sector": 80,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 24.6,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 0.0,
+    "phi_from_plax_deg": 180.0,
+    "section_deviation_deg": 0.0
+   },
+   "expect": [
+    "lv",
+    "av",
+    "aorta",
+    "la"
+   ],
+   "absent": [
+    "tv",
+    "ra"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "From the subcostal long axis, rotate and tilt slightly rightward to open the LV outflow tract and ascending aorta.",
+   "pitfall": "Beam-flow alignment is usually better here than parasternal for outflow Doppler in a small infant.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "LVOT alignment",
+    "Aortic arch continuity"
+   ]
+  },
+  {
+   "id": "sub_rvot",
+   "name": "Subcostal long axis - pulmonary artery / RV outflow",
+   "window": "subcostal",
+   "window_label": "Subxiphoid (subcostal)",
+   "family": "oblique",
+   "section": "oblique_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "points",
+    "a": "pv",
+    "b": "mpa_bif"
+   },
+   "aim": "pv",
+   "contact": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "window_nominal": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "beam": [
+    -0.0772,
+    0.9854,
+    -0.1518
+   ],
+   "index": [
+    -0.8918,
+    -0.0002,
+    0.4524
+   ],
+   "normal": [
+    0.4457,
+    0.1703,
+    0.8788
+   ],
+   "index_toward": "toward the patient's right, and somewhat toward the chest wall (anterior)",
+   "clock_computed": 10,
+   "clock_deg": 285.8,
+   "clock_stated": null,
+   "depth": 6.0,
+   "sector": 80,
+   "image_right": "base",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "long_axis_offset_mm": 8.3,
+    "nearest_section": "four_chamber",
+    "nearest_section_deg": 28.7,
+    "vessel_axis_offset_mm": 0.7
+   },
+   "expect": [
+    "rv",
+    "pv",
+    "mpa",
+    "liver"
+   ],
+   "absent": [
+    "la",
+    "mv"
+   ],
+   "vessel_axis": [
+    [
+     "mpa",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "Tilt further anteriorly and to the patient's left to bring the RV outflow tract and main pulmonary artery into the plane.",
+   "pitfall": "The MPA runs away from the subcostal beam, so it is easy to cut it obliquely and overcall its size.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "RV outflow and pulmonary valve Doppler"
+   ]
+  },
+  {
+   "id": "sub_ivc",
+   "name": "Subcostal short axis - IVC (sagittal)",
+   "window": "subcostal",
+   "window_label": "Subxiphoid (subcostal)",
+   "family": "vessel",
+   "section": "vessel_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "axes": [
+     [
+      "ivc",
+      [
+       0,
+       3
+      ]
+     ]
+    ]
+   },
+   "aim": "ivc_mid",
+   "contact": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "window_nominal": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "beam": [
+    -0.2199,
+    0.7067,
+    -0.6725
+   ],
+   "index": [
+    0.035,
+    0.6946,
+    0.7185
+   ],
+   "normal": [
+    0.9749,
+    0.1345,
+    -0.1775
+   ],
+   "index_toward": "toward the chest wall (anterior), and somewhat toward the head",
+   "clock_computed": 12,
+   "clock_deg": 2.1,
+   "clock_stated": "12 o'clock",
+   "depth": 5.0,
+   "sector": 70,
+   "image_right": "cephalad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 1.32,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 29.1,
+    "vessel_axis_offset_mm": 1.3
+   },
+   "expect": [
+    "ivc",
+    "ra",
+    "hepatic_v",
+    "liver"
+   ],
+   "absent": [
+    "lv",
+    "mv"
+   ],
+   "vessel_axis": [
+    [
+     "ivc",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "Rotate to a sagittal plane just right of the midline and follow the IVC through the liver to its entry into the right atrium. The hepatic vein joins it just below the diaphragm.",
+   "pitfall": "Measure the IVC where it is straight and at a fixed point through the respiratory cycle; oblique cuts exaggerate the diameter.",
+   "limitation": null,
+   "source": "SCAN deck slide 22, which labels this view and states 'Pointer 12 o'clock'.",
+   "teaches": [
+    "IVC diameter as a volume-status marker",
+    "IVC distensibility index (max-min)/min, normal ~18%",
+    "Collapsibility >50% suggests a low central venous pressure"
+   ]
+  },
+  {
+   "id": "sub_aorta",
+   "name": "Subcostal short axis - abdominal aorta (sagittal)",
+   "window": "subcostal",
+   "window_label": "Subxiphoid (subcostal)",
+   "family": "vessel",
+   "section": "vessel_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "axes": [
+     [
+      "aorta",
+      [
+       5,
+       8
+      ]
+     ],
+     [
+      "celiac",
+      [
+       0,
+       2
+      ]
+     ]
+    ]
+   },
+   "aim": "abdo_ao",
+   "contact": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "window_nominal": [
+    0.0,
+    -5.5,
+    0.15
+   ],
+   "beam": [
+    0.1027,
+    -0.0371,
+    -0.994
+   ],
+   "index": [
+    -0.0488,
+    0.9979,
+    -0.0423
+   ],
+   "normal": [
+    0.9935,
+    0.0529,
+    0.1007
+   ],
+   "index_toward": "toward the head",
+   "clock_computed": 12,
+   "clock_deg": 356.5,
+   "clock_stated": null,
+   "depth": 5.0,
+   "sector": 70,
+   "image_right": "cephalad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.76,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 39.5,
+    "vessel_axis_offset_mm": 1.3
+   },
+   "expect": [
+    "aorta",
+    "celiac",
+    "sma",
+    "liver"
+   ],
+   "absent": [
+    "lv",
+    "la",
+    "mv"
+   ],
+   "vessel_axis": [
+    [
+     "aorta",
+     [
+      5,
+      8
+     ]
+    ]
+   ],
+   "manoeuvre": "From the IVC plane, slide slightly to the patient's left and angle posteriorly; the abdominal aorta is the pulsatile vessel with the coeliac trunk and SMA arising anteriorly.",
+   "pitfall": "The aorta lies to the patient's left of, and deeper than, the IVC. Confusing the two inverts the whole assessment.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Descending aorta peak systolic and diastolic velocity",
+    "Coeliac / SMA flow as markers of systemic hypoperfusion",
+    "Diastolic flow reversal with a large duct"
+   ]
+  },
+  {
+   "id": "ssn_arch",
+   "name": "Suprasternal long axis - aortic arch",
+   "window": "supra",
+   "window_label": "Suprasternal notch",
+   "family": "vessel",
+   "section": "vessel_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "axes": [
+     [
+      "aorta",
+      [
+       1,
+       6
+      ]
+     ]
+    ]
+   },
+   "aim": "arch",
+   "contact": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "window_nominal": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "beam": [
+    -0.0592,
+    -0.077,
+    -0.9953
+   ],
+   "index": [
+    -0.0723,
+    0.9947,
+    -0.0727
+   ],
+   "normal": [
+    0.9956,
+    0.0677,
+    -0.0645
+   ],
+   "index_toward": "toward the head",
+   "clock_computed": 6,
+   "clock_deg": 173.4,
+   "clock_stated": "12-1 o'clock",
+   "depth": 4.5,
+   "sector": 70,
+   "image_right": "cephalad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 34.6,
+    "vessel_axis_offset_mm": 0.0
+   },
+   "expect": [
+    "aorta",
+    "innominate",
+    "lcca",
+    "lsca",
+    "rpa"
+   ],
+   "absent": [
+    "lv",
+    "mv",
+    "tv"
+   ],
+   "vessel_axis": [
+    [
+     "aorta",
+     [
+      1,
+      6
+     ]
+    ]
+   ],
+   "manoeuvre": "Probe in the suprasternal notch with the neck extended. The plane of the arch is tilted and rotated off a true sagittal cut, so start sagittal and rotate until the whole 'candy cane' opens up. The right pulmonary artery is cut in cross-section under the arch.",
+   "pitfall": "Extending the neck and turning the head slightly away opens the notch. If only part of the arch is seen, rotate rather than slide.",
+   "limitation": null,
+   "source": "SCAN deck slide 29, Longitudinal Aortic Arch View, which states the pointer at 12-1 o'clock.",
+   "teaches": [
+    "Arch anatomy and the three head/neck vessels",
+    "Coarctation and diastolic run-off",
+    "Duct seen distal to the left subclavian"
+   ]
+  },
+  {
+   "id": "ssn_crab",
+   "name": "Suprasternal short axis - 'crab' / pulmonary veins",
+   "window": "supra",
+   "window_label": "Suprasternal notch",
+   "family": "vessel",
+   "section": "vessel_coronal",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "points",
+    "a": "pulm_veins",
+    "b": "la_left"
+   },
+   "aim": "pulm_veins",
+   "contact": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "window_nominal": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "beam": [
+    -0.2075,
+    -0.5809,
+    -0.787
+   ],
+   "index": [
+    -0.9782,
+    0.1233,
+    0.167
+   ],
+   "normal": [
+    0.0,
+    0.8046,
+    -0.5939
+   ],
+   "index_toward": "toward the patient's right",
+   "clock_computed": 3,
+   "clock_deg": 86.1,
+   "clock_stated": "9 o'clock",
+   "depth": 4.5,
+   "sector": 75,
+   "image_right": "patient_right",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.0,
+    "nearest_section": "short_axis",
+    "nearest_section_deg": 41.6
+   },
+   "expect": [
+    "la",
+    "lupv",
+    "rupv"
+   ],
+   "absent": [
+    "mv",
+    "av"
+   ],
+   "vessel_axis": [],
+   "manoeuvre": "Upper third of the sternum, index mark toward the patient's right. The coronal plane opens the left atrium with all four pulmonary veins entering it - the 'crab' - alongside the SVC.",
+   "pitfall": "A shallow coronal plane shows the arch in cross-section instead; angle slightly more posteriorly to drop onto the atrium. Counting all four veins needs a slow sweep through the atrium rather than one frozen plane - the upper pair and the lower pair do not lie in the same cut.",
+   "limitation": null,
+   "source": "Recorded SCAN lecture slide 'Supra-sternal PV view (crab view) - upper 1/3rd sternum, pointer 9 o'clock'. The slide deck does not cover this view.",
+   "teaches": [
+    "Confirming all four pulmonary veins",
+    "Excluding anomalous pulmonary venous drainage"
+   ]
+  },
+  {
+   "id": "high_ps_duct",
+   "name": "High parasternal ductal view",
+   "window": "high_ps",
+   "window_label": "High left parasternal (ductal)",
+   "family": "vessel",
+   "section": "vessel_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "axes": [
+     [
+      "pda",
+      [
+       0,
+       3
+      ]
+     ],
+     [
+      "aorta",
+      [
+       4,
+       6
+      ]
+     ]
+    ]
+   },
+   "aim": "duct",
+   "contact": [
+    0.95,
+    -1.15,
+    0.75
+   ],
+   "window_nominal": [
+    0.95,
+    -1.15,
+    0.75
+   ],
+   "beam": [
+    -0.427,
+    0.2005,
+    -0.8817
+   ],
+   "index": [
+    0.5685,
+    -0.6988,
+    -0.4342
+   ],
+   "normal": [
+    -0.7032,
+    -0.6866,
+    0.1844
+   ],
+   "index_toward": "toward the feet, and somewhat toward the patient's left",
+   "clock_computed": 5,
+   "clock_deg": 135.5,
+   "clock_stated": null,
+   "depth": 4.0,
+   "sector": 70,
+   "image_right": "caudad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 1.39,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 7.7,
+    "vessel_axis_offset_mm": 1.6
+   },
+   "expect": [
+    "pda",
+    "aorta",
+    "mpa",
+    "lpa"
+   ],
+   "absent": [
+    "lv",
+    "mv",
+    "tv"
+   ],
+   "vessel_axis": [
+    [
+     "pda",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "High left parasternal, beam angled toward the left shoulder. The duct is displayed along its length between the descending aorta and the pulmonary artery, which is the plane for aligning Doppler with ductal flow.",
+   "pitfall": "This is the view for ductal velocity and flow direction; the short axis ductal cut is better for measuring ductal diameter.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "Ductal flow direction: left-to-right, bidirectional, right-to-left",
+    "Peak and end-diastolic ductal velocity"
+   ]
+  },
+  {
+   "id": "svc_flow",
+   "name": "SVC long axis (SVC flow)",
+   "window": "supra",
+   "window_label": "Suprasternal notch",
+   "family": "vessel",
+   "section": "vessel_long_axis",
+   "strict_section": false,
+   "plane_rule": {
+    "kind": "best_fit",
+    "axes": [
+     [
+      "svc",
+      [
+       0,
+       4
+      ]
+     ]
+    ]
+   },
+   "aim": "svc_mid",
+   "contact": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "window_nominal": [
+    0.0,
+    0.15,
+    -0.1
+   ],
+   "beam": [
+    -0.5985,
+    -0.308,
+    -0.7396
+   ],
+   "index": [
+    -0.1267,
+    0.9479,
+    -0.2922
+   ],
+   "normal": [
+    0.791,
+    -0.0811,
+    -0.6064
+   ],
+   "index_toward": "toward the head",
+   "clock_computed": 6,
+   "clock_deg": 170.8,
+   "clock_stated": null,
+   "depth": 4.5,
+   "sector": 70,
+   "image_right": "cephalad",
+   "metrics": {
+    "window_shift_mm": 0.0,
+    "aim_offset_mm": 0.47,
+    "nearest_section": "long_axis",
+    "nearest_section_deg": 44.7,
+    "vessel_axis_offset_mm": 0.3
+   },
+   "expect": [
+    "svc",
+    "ra"
+   ],
+   "absent": [
+    "lv",
+    "mv"
+   ],
+   "vessel_axis": [
+    [
+     "svc",
+     [
+      0,
+      3
+     ]
+    ]
+   ],
+   "manoeuvre": "From the suprasternal notch angle slightly to the patient's right and rotate to a sagittal plane to lay the SVC out along its length as it descends into the right atrium.",
+   "pitfall": "SVC flow is highly angle-dependent; keep the beam within 20 degrees of the vessel axis.",
+   "limitation": null,
+   "source": null,
+   "teaches": [
+    "SVC flow as a surrogate for upper body / cerebral perfusion"
+   ]
+  }
+ ]
+}

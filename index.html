@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neonatal echo: probe to plane</title>
+<meta name="description" content="An interactive 3D neonatal heart where every
+standard echocardiography view is generated from a real transducer pose - the
+window you place the probe on, the way you aim it, and the way you turn it.">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header>
+  <h1>Neonatal echo <span>&mdash; probe to plane</span></h1>
+  <p class="tagline">Every view here is a <strong>probe pose</strong>: a window on
+  the chest, a beam direction, and an index-mark rotation. The cut plane follows
+  the probe, and the sections are defined against the heart&rsquo;s own long
+  axis &mdash; not the body&rsquo;s.</p>
+  <nav class="modes">
+    <button id="mode-guided" class="mbtn on">Guided</button>
+    <button id="mode-free" class="mbtn">Free probe</button>
+    <button id="mode-quiz" class="mbtn">Quiz</button>
+  </nav>
+</header>
+
+<main>
+  <aside id="side-left">
+    <h2>Standard views</h2>
+    <div id="views"></div>
+    <h2>Show</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-cut" checked> Cut the heart open</label>
+      <label><input type="checkbox" id="t-axis"> Cardiac long axis</label>
+      <label><input type="checkbox" id="t-torso" checked> Torso &amp; windows</label>
+      <label><input type="checkbox" id="g-chamber" checked> Chambers &amp; walls</label>
+      <label><input type="checkbox" id="g-valve" checked> Valves</label>
+      <label><input type="checkbox" id="g-vessel" checked> Great vessels</label>
+      <label><input type="checkbox" id="g-detail" checked> Papillary muscles</label>
+      <label><input type="checkbox" id="g-context" checked> Liver &amp; spine</label>
+    </div>
+  </aside>
+
+  <section id="stages">
+    <div id="stage3d"><canvas id="c3d"></canvas>
+      <div class="cap">3D &mdash; probe, imaging plane and the cut surface</div>
+    </div>
+    <div id="stage2d"><canvas id="c2d"></canvas>
+      <div class="cap">What the screen shows &mdash; index mark to image right</div>
+    </div>
+  </section>
+
+  <aside id="side-right">
+    <h2 id="vname">&nbsp;</h2>
+    <p id="vwindow" class="win"></p>
+    <p id="vmeta" class="meta"></p>
+
+    <div id="panel-guided">
+      <h3>Manoeuvre</h3>
+      <p id="vman"></p>
+      <h3>Pitfall</h3>
+      <p id="vpit"></p>
+      <p id="vlim" class="limit"></p>
+      <p id="vsrc" class="src"></p>
+      <h3>What it is for</h3>
+      <ul id="vteach"></ul>
+    </div>
+
+    <div id="panel-free" style="display:none">
+      <h3>Move the probe</h3>
+      <div class="pad">
+        <div class="padrow"><span>Rotate</span>
+          <button id="rot-ccw">&#8630; Q</button><button id="rot-cw">E &#8631;</button>
+        </div>
+        <div class="padrow"><span>Sweep <em>(new plane)</em></span>
+          <button id="sweep-back">&uarr; W</button><button id="sweep-fwd">S &darr;</button>
+        </div>
+        <div class="padrow"><span>Rock <em>(same plane)</em></span>
+          <button id="rock-up">&larr; A</button><button id="rock-down">D &rarr;</button>
+        </div>
+        <div class="padrow"><span>Slide</span>
+          <button id="slide-l">left</button><button id="slide-r">right</button>
+          <button id="slide-u">up</button><button id="slide-d">down</button>
+        </div>
+        <div class="padrow"><span>&nbsp;</span><button id="reset">Reset to view (R)</button></div>
+      </div>
+      <p id="advice" class="advice"></p>
+      <p id="nearest" class="nearest"></p>
+      <p class="hint"><strong>Rotating</strong> about the beam changes which
+      <em>section</em> you get. <strong>Sweeping</strong> tilts the beam about the
+      index mark, which moves the plane itself and is how one view becomes
+      another. <strong>Rocking</strong> stays inside the current plane, so the
+      cross-section does not change at all &mdash; only the part of it the sector
+      covers. <strong>Sliding</strong> changes the <em>window</em>. Watch the plane
+      angle below: that is how far off the view you are.</p>
+    </div>
+
+    <div id="panel-quiz" style="display:none">
+      <h3 id="quiz-msg"></h3>
+      <div id="quiz-choices" class="qchoices"></div>
+      <p id="quiz-explain" class="explain"></p>
+      <button id="quiz-next" onclick="location.reload()" style="display:none"></button>
+    </div>
+
+    <h3>Depth</h3>
+    <input type="range" id="depth" min="2" max="9" step="0.25" value="5">
+    <span id="depth-val" class="mono"></span>
+
+    <h3>Image</h3>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-speckle" checked> Speckle texture</label>
+      <label><input type="checkbox" id="t-labels" checked> Labels</label>
+      <label><input type="checkbox" id="t-invert"> Mirror the display</label>
+    </div>
+
+    <h3>In the sector</h3>
+    <div id="seen" class="chips"></div>
+    <p id="dev" class="mono dev"></p>
+  </aside>
+</main>
+
+<footer>
+  <p>Index-mark directions are given in plain anatomical terms rather than as
+  clock positions, because a clock position needs a 12 o&rsquo;clock reference on
+  the probe face and that reference is ambiguous in the suprasternal notch, where
+  the face lies almost horizontal. Where the source material states a pointer
+  position, it is quoted and attributed on the view itself.</p>
+  <p>Geometry is an idealised term newborn (heart long axis 33.7&nbsp;mm) in a
+  patient frame whose origin is the suprasternal notch. Cut surfaces and the
+  echo panel are drawn from the same analytic cross-section, so the two panels
+  cannot disagree. Every view&rsquo;s plane is checked against the anatomy by
+  <code>tools/verify_planes.py</code>, which runs this page&rsquo;s own
+  <code>geom.js</code> and <code>slicer.js</code>.</p>
+  <p>A teaching model, not a diagnostic tool and not patient data.</p>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
