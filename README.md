@@ -148,9 +148,19 @@ asking "does the plane cross this structure" and start asking "is it on screen".
 * The heart is a **synthesised idealised term newborn**, not segmented patient
   imaging. Cross-sections are schematic-accurate — correct structures, correct
   relative positions, correct orientation conventions — not image-accurate.
-* Two views carry a **documented limitation** where the idealised geometry and a
-  real acquisition differ; the app shows the note rather than quietly fudging
-  the model. See the aortic-valve short axis and the five-chamber view.
+* **Four views carry a documented limitation** where the idealised geometry and
+  a real acquisition differ. The app shows the note rather than quietly fudging
+  the model:
+  * *parasternal short axis, aortic-valve level* — the exact short-axis plane at
+    this level passes above the tricuspid funnel, so the tricuspid valve is not
+    drawn here even though a real basal cut shows it;
+  * *apical five chamber* — a genuine anterior tilt rather than a rotation, so
+    it trades the tricuspid valve for the aorta;
+  * *PLAX RV inflow* and *PLAX RV outflow* — these are sweeps rather than
+    discrete planes, so what is on screen depends where you stop. Their
+    exclusion lists are deliberately narrower than the other views': only the
+    structures whose disappearance actually tells you the sweep has arrived are
+    listed as absent.
 * The torso is a **reference body** for probe placement and orientation. Its
   proportions are not anthropometric, and the model prioritises correct cardiac
   and great-vessel geometry relative to the acoustic windows over whole-torso
