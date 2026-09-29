@@ -94,11 +94,20 @@ structures, the manoeuvre in words, and the pitfall that view is known for.
 * Index-mark directions are given in **plain anatomical terms** rather than as
   clock positions. A clock position needs a 12 o'clock reference on the probe
   face, and that reference is genuinely ambiguous in the suprasternal notch
-  where the face lies almost horizontal. Where the source material states a
-  pointer position it is quoted and attributed on the view itself — the SCAN
-  deck states one for the subcostal IVC view (slide 22, "pointer 12 o'clock")
-  and the longitudinal arch view (slide 29, "12–1 o'clock"); the recorded
-  lecture states one for the crab view ("upper 1/3 sternum, pointer 9 o'clock").
+  where the face lies almost horizontal.
+* Where a source states a pointer position it is quoted and attributed **on the
+  view itself**, with its provenance, because the three available statements do
+  not come from the same place:
+  * subcostal IVC — "Pointer 12 o'clock", **slide 22** of the deck;
+  * longitudinal aortic arch — "12–1 o'clock", **slide 29** of the deck;
+  * suprasternal "crab" — "upper 1/3rd sternum, pointer 9 o'clock", read off the
+    title card of the **recorded lecture** at about 20:13, not from the deck.
+    The deck does not contain the word "crab" or describe this view at all.
+* Everything else is a **house convention**, marked as such in the view's
+  `index_note`. Two views carry one: the arch view's cephalad orientation is an
+  interpretation of the deck's clock figure, and the SVC view's matching
+  orientation is chosen only so the two sagittal suprasternal views are not
+  mirror images of each other.
 
 ## How the geometry is built and checked
 

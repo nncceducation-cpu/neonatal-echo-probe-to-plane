@@ -271,6 +271,9 @@ function renderInfo() {
   const lim = $('#vlim');
   lim.style.display = v.limitation ? '' : 'none';
   lim.textContent = v.limitation || '';
+  const note = $('#vnote');
+  note.style.display = v.index_note ? '' : 'none';
+  note.textContent = v.index_note || '';
   const src = $('#vsrc');
   src.style.display = v.source ? '' : 'none';
   src.textContent = v.source ? `Source: ${v.source}` : '';

@@ -19,6 +19,12 @@ export function torsoSurface(y) {
  * Point on the skin at transverse offset x and height y.
  * Used when the probe is slid over the chest: the contact point stays on the
  * body rather than floating away from it.
+ *
+ * x/a is clamped just inside +/-1 rather than at +/-1. At the exact lateral
+ * tangent the surface normal turns purely transverse and the probe's frame
+ * degenerates, so sliding all the way to the side of the chest would leave the
+ * beam direction undefined. The clamp stops the slide about 10 degrees short of
+ * that point, which is also past any real acoustic window.
  */
 export function skinAt(x, y) {
   const { a, c, zc } = torsoSurface(y);

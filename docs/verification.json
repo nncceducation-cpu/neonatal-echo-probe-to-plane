@@ -69,7 +69,7 @@
     "tv"
    ],
    "problems": [],
-   "limitation": null
+   "limitation": "This is a sweep, not a discrete view, so what is on screen depends on where in the sweep you stop. The plane that opens the tricuspid valve and RA also clips the aortic root and the edge of the left atrium, which is why only the LV and mitral valve are listed as reliably absent: those are the structures whose disappearance tells you the sweep has left the LV long axis and reached the RV inlet."
   },
   {
    "id": "plax_rv_out",
@@ -109,7 +109,7 @@
     "svc"
    ],
    "problems": [],
-   "limitation": null
+   "limitation": "Also a sweep. Tilting anteriorly off PLAX brings the RV outflow and pulmonary artery in, but at 3.6 cm depth the cut still crosses the base, so the left atrium and mitral valve can appear at the far field. The tricuspid valve is the discriminator that matters: inflow shows it, outflow does not."
   },
   {
    "id": "psax_av",

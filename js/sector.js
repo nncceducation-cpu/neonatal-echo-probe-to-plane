@@ -236,7 +236,10 @@ export class SectorView {
   }
 }
 
-// The abbreviations the SCAN deck itself uses on its echo stills.
+// Short labels for the sector panel.  The SCAN deck's own echo stills label
+// LA, LV, RA, RV, IAS, TV, PDA, IVC and Ao; where the deck spells a structure
+// out in full (for example "Celiac Trunk", "Superior Mesenteric Artery") the
+// abbreviation below is the conventional one, chosen here to fit the panel.
 export const SHORT = {
   lv: 'LV', rv: 'RV', la: 'LA', ra: 'RA', ivs: 'IVS', ias: 'IAS',
   mv: 'MV', tv: 'TV', av: 'AoV', pv: 'PV', aorta: 'Ao', mpa: 'MPA',

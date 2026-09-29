@@ -137,6 +137,7 @@
    "manoeuvre": "Left 3rd intercostal space, immediately lateral to the sternum. Index mark to the patient's right shoulder. The plane is the heart's own long axis, so the beam runs from the RV anteriorly, through the septum and LV cavity, to the LA and aortic root posteriorly.",
    "pitfall": "Sliding too lateral foreshortens the LV and drops the aortic root out of plane. If you see the tricuspid valve you have rotated toward the RV inflow, not the LV long axis.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "LA:Ao ratio",
@@ -208,7 +209,8 @@
    "vessel_axis": [],
    "manoeuvre": "From PLAX, tilt the beam inferiorly and medially (toward the patient's right hip) without rotating. The LV drops away and the tricuspid valve, RA and RV inlet come into plane.",
    "pitfall": "This is a tilt, not a rotation. Rotating instead gives a short axis.",
-   "limitation": null,
+   "limitation": "This is a sweep, not a discrete view, so what is on screen depends on where in the sweep you stop. The plane that opens the tricuspid valve and RA also clips the aortic root and the edge of the left atrium, which is why only the LV and mitral valve are listed as reliably absent: those are the structures whose disappearance tells you the sweep has left the LV long axis and reached the RV inlet.",
+   "index_note": null,
    "source": null,
    "teaches": [
     "Tricuspid regurgitation jet for RV pressure"
@@ -287,7 +289,8 @@
    ],
    "manoeuvre": "From PLAX, tilt the beam superiorly and slightly laterally (toward the patient's left shoulder) to line up the RV outflow tract, pulmonary valve and main pulmonary artery.",
    "pitfall": "Too steep a tilt and the MPA is cut obliquely, overestimating its size.",
-   "limitation": null,
+   "limitation": "Also a sweep. Tilting anteriorly off PLAX brings the RV outflow and pulmonary artery in, but at 3.6 cm depth the cut still crosses the base, so the left atrium and mitral valve can appear at the far field. The tricuspid valve is the discriminator that matters: inflow shows it, outflow does not.",
+   "index_note": null,
    "source": null,
    "teaches": [
     "Pulmonary valve Doppler",
@@ -360,6 +363,7 @@
    "manoeuvre": "From PLAX, rotate the probe 90 degrees clockwise so the index mark points to the patient's left shoulder. The aortic valve appears centrally as the tri-leaflet 'Mercedes' sign.",
    "pitfall": "The circle of the aorta must be round. If it is oval you are still cutting obliquely - rotate a few more degrees.",
    "limitation": "In a real basal cut the tricuspid and pulmonary valves flank the aorta, because the operator tilts slightly off a pure short axis to catch them. This model renders the exact short-axis plane at the aortic valve level, which passes above the tricuspid funnel, so the tricuspid valve is not drawn here. Use the four-chamber or RV-inflow view for it.",
+   "index_note": null,
    "source": null,
    "teaches": [
     "Tri-leaflet aortic valve",
@@ -429,6 +433,7 @@
    "manoeuvre": "Hold the short-axis rotation and tilt the beam toward the apex (inferolaterally) until the mitral leaflets open as a 'fish mouth'.",
    "pitfall": "Tilting rather than sliding keeps the same window; sliding laterally loses the parasternal window altogether.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Mitral leaflet motion"
@@ -501,6 +506,7 @@
    "manoeuvre": "Continue tilting toward the apex until both papillary muscles are seen inside a circular LV cavity.",
    "pitfall": "This is the level for eyeballing regional wall motion and the 'kissing ventricles' of a severely underfilled heart.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Visual LV function",
@@ -573,6 +579,7 @@
    "manoeuvre": "The most apical short-axis cut; the LV cavity is small and the RV has almost disappeared.",
    "pitfall": "Easy to mistake a foreshortened oblique cut for a true apical level.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Apical wall motion"
@@ -676,6 +683,7 @@
    "manoeuvre": "From the aortic-valve short axis, slide one interspace higher and angle the beam toward the patient's left shoulder. The MPA, its bifurcation and the duct entering the descending aorta line up as the 'three-legged' ductal view.",
    "pitfall": "The duct is often mistaken for the LPA. Follow the MPA to its bifurcation first, then look posteriorly for the third limb.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Duct patency and size at the pulmonary end",
@@ -754,6 +762,7 @@
    "manoeuvre": "Probe over the apex beat, left 4th-5th interspace, index mark to the patient's left (3 o'clock). The beam runs from apex to base along the long axis, and the plane contains both AV valves.",
    "pitfall": "The commonest error is foreshortening: sliding medially puts the beam off the true apex and shortens the LV. The LV should be the longest chamber and its apex should sit at the top of the sector.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Chamber size and symmetry",
@@ -832,6 +841,7 @@
    "manoeuvre": "From the four chamber, tilt the beam anteriorly (toward the chest wall). The aortic valve and LVOT appear in the centre of the sector, making the 'fifth chamber'.",
    "pitfall": "Tilt, do not rotate. Over-tilting loses the atria.",
    "limitation": "The five-chamber plane cannot both contain the heart's long axis and pass through the aortic valve - the valve sits about 23 degrees off the long-axis plane. So this view is a genuine anterior TILT rather than a rotation, and it buys the aorta at the cost of the tricuspid valve, which drops out of plane. The RV outflow tract appears at the anterior edge.",
+   "index_note": null,
    "source": null,
    "teaches": [
     "LVOT Doppler for left ventricular output"
@@ -905,6 +915,7 @@
    "manoeuvre": "From the four chamber, rotate the probe counter-clockwise about the beam until the aortic root appears alongside the mitral valve. This is the same cardiac long-axis section as PLAX, seen from the apex instead of the parasternum.",
    "pitfall": "This view aligns the beam with LVOT flow, so it is the view of choice for left ventricular output; a poorly aligned beam underestimates the velocity time integral.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Left ventricular output (VTI x CSA x HR)"
@@ -977,6 +988,7 @@
    "manoeuvre": "Continue rotating from the three chamber until only the LV and LA remain, with the anterior and inferior LV walls facing each other.",
    "pitfall": "Rotation must be about the beam axis; drifting off the apex foreshortens the ventricle.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Anterior and inferior LV wall motion"
@@ -1052,6 +1064,7 @@
    "manoeuvre": "Probe flat in the subxiphoid hollow, angled steeply cephalad so the beam passes up through the liver into the heart. Gives a four-chamber-equivalent plane from below.",
    "pitfall": "The liver is the acoustic window, so keep the beam angled, not pressed. This window survives when the parasternal window is lost to lung, and is the workhorse when the chest is not accessible.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Chamber size when the precordium is unavailable",
@@ -1125,6 +1138,7 @@
    "manoeuvre": "From the subcostal long axis, rotate and tilt slightly rightward to open the LV outflow tract and ascending aorta.",
    "pitfall": "Beam-flow alignment is usually better here than parasternal for outflow Doppler in a small infant.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "LVOT alignment",
@@ -1207,6 +1221,7 @@
    "manoeuvre": "Tilt further anteriorly and to the patient's left to bring the RV outflow tract and main pulmonary artery into the plane.",
    "pitfall": "The MPA runs away from the subcostal beam, so it is easy to cut it obliquely and overcall its size.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "RV outflow and pulmonary valve Doppler"
@@ -1294,6 +1309,7 @@
    "manoeuvre": "Rotate to a sagittal plane just right of the midline and follow the IVC through the liver to its entry into the right atrium. The hepatic vein joins it just below the diaphragm.",
    "pitfall": "Measure the IVC where it is straight and at a fixed point through the respiratory cycle; oblique cuts exaggerate the diameter.",
    "limitation": null,
+   "index_note": null,
    "source": "SCAN deck slide 22, which labels this view and states 'Pointer 12 o'clock'.",
    "teaches": [
     "IVC diameter as a volume-status marker",
@@ -1391,6 +1407,7 @@
    "manoeuvre": "From the IVC plane, slide slightly to the patient's left and angle posteriorly; the abdominal aorta is the pulsatile vessel with the coeliac trunk and SMA arising anteriorly.",
    "pitfall": "The aorta lies to the patient's left of, and deeper than, the IVC. Confusing the two inverts the whole assessment.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Descending aorta peak systolic and diastolic velocity",
@@ -1482,6 +1499,7 @@
    "manoeuvre": "Probe in the suprasternal notch with the neck extended. The plane of the arch is tilted and rotated off a true sagittal cut, so start sagittal and rotate until the whole 'candy cane' opens up. The right pulmonary artery is cut in cross-section under the arch.",
    "pitfall": "Extending the neck and turning the head slightly away opens the notch. If only part of the arch is seen, rotate rather than slide.",
    "limitation": null,
+   "index_note": "The deck gives the pointer as 12-1 o'clock but says nothing about caudad or cephalad. Read against the body, 12 o'clock is toward the head, so the index axis here is oriented cephalad. That is an interpretation of the deck's clock figure, not a separate statement in it.",
    "source": "SCAN deck slide 29, Longitudinal Aortic Arch View, which states the pointer at 12-1 o'clock.",
    "teaches": [
     "Arch anatomy and the three head/neck vessels",
@@ -1554,6 +1572,7 @@
    "manoeuvre": "Upper third of the sternum, index mark toward the patient's right. The coronal plane opens the left atrium with all four pulmonary veins entering it - the 'crab' - alongside the SVC.",
    "pitfall": "A shallow coronal plane shows the arch in cross-section instead; angle slightly more posteriorly to drop onto the atrium. Counting all four veins needs a slow sweep through the atrium rather than one frozen plane - the upper pair and the lower pair do not lie in the same cut.",
    "limitation": null,
+   "index_note": null,
    "source": "Recorded SCAN lecture slide 'Supra-sternal PV view (crab view) - upper 1/3rd sternum, pointer 9 o'clock'. The slide deck does not cover this view.",
    "teaches": [
     "Confirming all four pulmonary veins",
@@ -1650,6 +1669,7 @@
    "manoeuvre": "High left parasternal, beam angled toward the left shoulder. The duct is displayed along its length between the descending aorta and the pulmonary artery, which is the plane for aligning Doppler with ductal flow.",
    "pitfall": "This is the view for ductal velocity and flow direction; the short axis ductal cut is better for measuring ductal diameter.",
    "limitation": null,
+   "index_note": null,
    "source": null,
    "teaches": [
     "Ductal flow direction: left-to-right, bidirectional, right-to-left",
@@ -1736,6 +1756,7 @@
    "manoeuvre": "From the suprasternal notch angle slightly to the patient's right and rotate to a sagittal plane to lay the SVC out along its length as it descends into the right atrium.",
    "pitfall": "SVC flow is highly angle-dependent; keep the beam within 20 degrees of the vessel axis.",
    "limitation": null,
+   "index_note": "No source states a pointer position for this view. The index axis is oriented cephalad to match the suprasternal arch view, so that both sagittal views from the notch share one display convention and the SVC does not appear mirrored relative to the arch beside it. This is a house convention.",
    "source": null,
    "teaches": [
     "SVC flow as a surrogate for upper body / cerebral perfusion"

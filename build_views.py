@@ -345,6 +345,13 @@ V = [
       section="long_axis", plane=dict(kind="points", a="tv", b="ra"),
       aim="tv", image_right="base", depth=4.5, sector=70,
       expect=["rv", "ra", "tv"], absent=["lv", "mv"],
+      limitation="This is a sweep, not a discrete view, so what is on screen "
+                 "depends on where in the sweep you stop. The plane that opens "
+                 "the tricuspid valve and RA also clips the aortic root and the "
+                 "edge of the left atrium, which is why only the LV and mitral "
+                 "valve are listed as reliably absent: those are the structures "
+                 "whose disappearance tells you the sweep has left the LV long "
+                 "axis and reached the RV inlet.",
       manoeuvre="From PLAX, tilt the beam inferiorly and medially (toward the "
                 "patient's right hip) without rotating. The LV drops away and the "
                 "tricuspid valve, RA and RV inlet come into plane.",
@@ -355,6 +362,11 @@ V = [
       section="long_axis", plane=dict(kind="points", a="pv", b="mpa_bif"),
       aim="pv", image_right="base", depth=3.6, sector=70,
       expect=["rv", "pv", "mpa"], absent=["tv"],
+      limitation="Also a sweep. Tilting anteriorly off PLAX brings the RV "
+                 "outflow and pulmonary artery in, but at 3.6 cm depth the cut "
+                 "still crosses the base, so the left atrium and mitral valve "
+                 "can appear at the far field. The tricuspid valve is the "
+                 "discriminator that matters: inflow shows it, outflow does not.",
       manoeuvre="From PLAX, tilt the beam superiorly and slightly laterally (toward "
                 "the patient's left shoulder) to line up the RV outflow tract, "
                 "pulmonary valve and main pulmonary artery.",
@@ -550,6 +562,11 @@ V = [
       plane=dict(kind="best_fit", axes=[("aorta", (1, 6))]),
       aim="arch", image_right="cephalad", depth=4.5, sector=70,
       clock_stated="12-1 o\'clock",
+      index_note="The deck gives the pointer as 12-1 o'clock but says nothing "
+                 "about caudad or cephalad. Read against the body, 12 o'clock "
+                 "is toward the head, so the index axis here is oriented "
+                 "cephalad. That is an interpretation of the deck's clock "
+                 "figure, not a separate statement in it.",
       source="SCAN deck slide 29, Longitudinal Aortic Arch View, which states the pointer at 12-1 o\'clock.",
       expect=["aorta", "innominate", "lcca", "lsca", "rpa"],
       absent=["lv", "mv", "tv"],
@@ -599,6 +616,11 @@ V = [
  dict(id="svc_flow", name="SVC long axis (SVC flow)", window="supra",
       section="vessel_long_axis",
       plane=dict(kind="best_fit", axes=[("svc", (0, 4))]),
+      index_note="No source states a pointer position for this view. The index "
+                 "axis is oriented cephalad to match the suprasternal arch "
+                 "view, so that both sagittal views from the notch share one "
+                 "display convention and the SVC does not appear mirrored "
+                 "relative to the arch beside it. This is a house convention.",
       aim="svc_mid", image_right="cephalad", depth=4.5, sector=70,
       expect=["svc", "ra"], absent=["lv", "mv"],
       manoeuvre="From the suprasternal notch angle slightly to the patient's right "
@@ -671,6 +693,7 @@ for v in V:
         "vessel_axis": v["vessel_axis"],
         "manoeuvre": v["manoeuvre"], "pitfall": v["pitfall"],
         "limitation": v.get("limitation"),
+        "index_note": v.get("index_note"),
         "source": v.get("source"),
         "teaches": v["teaches"],
     })
