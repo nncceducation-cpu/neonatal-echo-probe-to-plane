@@ -94,11 +94,11 @@ export class RegisteredHeart {
     return Math.abs(distance) < .12 && alignment > .8;
   }
 
-  valveSections(plane) {
+  meshSections(plane) {
     const key = [...plane.origin,...plane.u,...plane.v,...plane.n].join(',');
     if (this.valveCache?.key === key) return this.valveCache.sections;
     const sections = [];
-    for (const mesh of this.meta.structures.filter(s=>s.group === 'valve')) {
+    for (const mesh of this.meta.structures.filter(s=>s.group === 'valve' || s.group === 'detail' || s.id === 'myo')) {
       const vertices = new Float32Array(this.mesh,mesh.vByte,mesh.vCount*3);
       const indices = new Uint32Array(this.mesh,mesh.iByte,mesh.iCount*3);
       const distances = new Float32Array(mesh.vCount);
@@ -115,15 +115,38 @@ export class RegisteredHeart {
         }
         if(points.length===2) segments.push(points);
       }
-      if(segments.length) sections.push({id:mesh.id,label:mesh.label,segments});
+      if(segments.length) sections.push({id:mesh.id,label:mesh.label,group:mesh.group,segments});
     }
     this.valveCache={key,sections};
     return sections;
   }
 
+  valveSections(plane) {
+    return this.meshSections(plane).filter(s=>s.group==='valve');
+  }
+
+  wallIntervals(plane,depth) {
+    const wall=this.meshSections(plane).find(s=>s.id==='myo');
+    const crossings=[];
+    for(const [a,b] of wall?.segments || []) {
+      // Half-open edge ownership avoids double counting shared vertices.
+      if((a[1]>depth)===(b[1]>depth)) continue;
+      crossings.push(a[0]+(depth-a[1])*(b[0]-a[0])/(b[1]-a[1]));
+    }
+    return crossings.sort((a,b)=>a-b);
+  }
+
+  sampleSection(point,lateral,crossings) {
+    let hits=0;
+    for(const x of crossings) {if(x>lateral) break;hits++;}
+    if(hits%2) return 0;
+    const label=this.sample(point);
+    // The mesh, not a coarse voxel, defines the myocardial boundary.
+    return label===0 ? 1 : label;
+  }
+
   drawValveSections(ctx,plane,project,monochrome=false) {
-    if(this.showValves === false) return [];
-    const sections=this.valveSections(plane);
+    const sections=this.meshSections(plane).filter(s=>(s.group==='valve' && this.showValves!==false) || (s.group==='detail' && this.showDetails!==false));
     ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
     // Exact intersections, not full leaflet silhouettes pasted onto each view.
     const a=project(0,0),b=project(.025,0);
@@ -133,7 +156,7 @@ export class RegisteredHeart {
       ctx.beginPath();
       for(const [start,end] of section.segments) {ctx.moveTo(...project(...start));ctx.lineTo(...project(...end));}
       ctx.strokeStyle=monochrome?'#c4c6cb':'#fff0d4';
-      ctx.lineWidth=width; ctx.stroke();
+      ctx.lineWidth=section.group==='detail' ? width*2 : width; ctx.stroke();
     }
     ctx.restore();
     this.drawAorticSection(ctx,plane,project,monochrome);

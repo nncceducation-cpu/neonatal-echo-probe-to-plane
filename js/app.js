@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-6';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-6';
-import { SectorView, SHORT } from './sector.js?v=20260929-6';
-import { Scene3D } from './scene3d.js?v=20260929-6';
-import { Probe } from './probe.js?v=20260929-6';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-6';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-6';
+import { buildStructures } from './geom.js?v=20260929-7';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-7';
+import { SectorView, SHORT } from './sector.js?v=20260929-7';
+import { Scene3D } from './scene3d.js?v=20260929-7';
+import { Probe } from './probe.js?v=20260929-7';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-7';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-7';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -405,6 +405,7 @@ function newQuiz() {
 function update() {
   const p = state.probe, v = state.view;
   if(state.registered) state.registered.showValves = state.groups.has('valve');
+  if(state.registered) state.registered.showDetails = state.groups.has('detail');
   const ref = state.mode === 'quiz' ? undefined : echoReferences[v.id];
   const matched = !!ref && referenceMatches(p,v);
   const referenceMode = $('#stage2d').classList.contains('reference-mode');

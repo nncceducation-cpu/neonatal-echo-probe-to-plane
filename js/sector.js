@@ -208,6 +208,7 @@ export class SectorView {
     const u = plane.u, v = plane.v, o = plane.origin;
     for (let y = Math.max(0, Math.floor(f.oy)); y < Math.min(f.H, f.oy + depth * f.s); y += step) {
       const d = (y - f.oy) / f.s;
+      const crossings = volume.wallIntervals(plane,d);
       const bound = Math.min(d * Math.tan(half), Math.sqrt(Math.max(0, depth * depth - d * d)));
       const x0 = Math.max(0, Math.floor(f.ox - bound * f.s));
       const x1 = Math.min(f.W, Math.ceil(f.ox + bound * f.s));
@@ -216,7 +217,7 @@ export class SectorView {
         const p = [o[0] + u[0] * lateral + v[0] * d,
                    o[1] + u[1] * lateral + v[1] * d,
                    o[2] + u[2] * lateral + v[2] * d];
-        const label = volume.sample(p);
+        const label = volume.sampleSection(p,lateral,crossings);
         if (label === 1) continue;
         if (label >= 2) this.registeredVisible.add(label);
         const neighbor = volume.sample([p[0] + u[0] * volume.step,

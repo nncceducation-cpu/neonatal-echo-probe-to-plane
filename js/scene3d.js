@@ -6,8 +6,8 @@
 
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
-import { PAINT_ORDER } from './sector.js?v=20260929-6';
-import { torsoSurface } from './body.js?v=20260929-6';
+import { PAINT_ORDER } from './sector.js?v=20260929-7';
+import { torsoSurface } from './body.js?v=20260929-7';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
 const COLOR = {
@@ -232,7 +232,7 @@ export class Scene3D {
       this._registeredCap.geometry.dispose();
       this._registeredCap = null;
     }
-    if (enable && this.registeredVolume) this._drawRegisteredCap(plane);
+    if (enable && this.registeredVolume) this._drawRegisteredCap(plane,view.depth);
     if (enable && !this.registered) {
       const u = new THREE.Vector3(...plane.u);
       const v = new THREE.Vector3(...plane.v);
@@ -408,26 +408,30 @@ export class Scene3D {
     this.controls.update();
   }
 
-  _drawRegisteredCap(plane) {
-    const N = 512, width = 10, height = 9;
+  _drawRegisteredCap(plane,depth=12) {
+    const N = 512, width = 2*depth, height = depth;
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = N;
     const ctx = canvas.getContext('2d');
     const image = ctx.createImageData(N, N);
     const u = plane.u, v = plane.v, o = plane.origin;
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    for (let y = 0; y < N; y++) {
+      const b = (1-y/(N-1))*height;
+      const crossings=this.registeredVolume.wallIntervals(plane,b);
+      for (let x = 0; x < N; x++) {
       const a = (x / (N - 1) - 0.5) * width;
       const b = (1 - y / (N - 1)) * height;
       const p = [o[0] + u[0] * a + v[0] * b,
                  o[1] + u[1] * a + v[1] * b,
                  o[2] + u[2] * a + v[2] * b];
-      const label = this.registeredVolume.sample(p);
+      const label = this.registeredVolume.sampleSection(p,a,crossings);
       const at = (y * N + x) * 4;
       if (label === 1) continue;
       const color = label === 0 ? [190, 104, 108]
         : label === 2 || label === 4 ? [144, 28, 40] : [36, 75, 154];
       image.data[at] = color[0]; image.data[at + 1] = color[1];
       image.data[at + 2] = color[2]; image.data[at + 3] = 255;
+    }
     }
     ctx.putImageData(image, 0, 0);
     this.registeredVolume.drawValveSections(ctx, plane,

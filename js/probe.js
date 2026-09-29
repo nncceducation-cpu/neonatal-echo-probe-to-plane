@@ -19,8 +19,8 @@
 //   rotate   turn the transducer about the beam axis      (changes the section)
 //   depth    the machine's depth setting                  (changes the sector)
 
-import { add, sub, mul, dot, cross, unit } from './geom.js?v=20260929-6';
-import { skinAt } from './body.js?v=20260929-6';
+import { add, sub, mul, dot, cross, unit } from './geom.js?v=20260929-7';
+import { skinAt } from './body.js?v=20260929-7';
 
 const DEG = Math.PI / 180;
 
@@ -40,7 +40,8 @@ export class Probe {
     this.viewId = view.id;
     this.contact = view.contact.slice();
     this.beam = unit(view.beam);
-    this.index = unit(view.index);
+    // Rounded presets must not shear the shared slice coordinate frame.
+    this.index = unit(sub(view.index,mul(this.beam,dot(view.index,this.beam))));
     this.depth = view.depth;
     this.sector = view.sector;
     this.window = view.window;
