@@ -19,7 +19,7 @@ const avNormal = [av.beam[1]*av.index[2]-av.beam[2]*av.index[1],av.beam[2]*av.in
 const avPlane = {origin:av.contact,u:av.index,v:av.beam,n:avNormal};
 if (!heart.aorticSectionVisible(avPlane)) throw Error('AV preset does not intersect the valve reconstruction');
 let cusps=0;
-const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},closePath(){},fill(){cusps++},stroke(){}};
+const context = {save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},closePath(){},stroke(){cusps++}};
 heart.drawAorticSection(context,avPlane,(x,y)=>[x,y]);
 if(cusps!==3) throw Error('Expected three cusp surfaces');
 const displaced = {...avPlane,origin:avPlane.origin.map((x,i)=>x+avNormal[i])};
@@ -43,4 +43,15 @@ for (const [id, expected] of Object.entries(cases)) {
   const seen = visible(views.find(v => v.id === id));
   for (const code of expected) if (!seen.has(code)) throw Error(`${id} misses chamber code ${code}; got ${[...seen]}`);
   console.log(`${id}: ${[...seen].join(', ')} — pass`);
+}
+for(const original of views) {
+  const v=heart.adaptView(original);
+  const plane={origin:v.contact,u:v.index,v:v.beam,n:cross(v.beam,v.index)};
+  const sections=heart.valveSections(plane);
+  for(const section of sections) for(const segment of section.segments) {
+    if(!segment.flat().every(Number.isFinite)) throw Error('Non-finite valve contour');
+  }
+  console.log(`${v.id} valve intersections: ${sections.map(s=>s.id).join(', ') || 'none'}`);
+  const expected={plax:['mv','av'],plax_rv_in:['tv'],plax_rv_out:['pv'],a4c:['mv','tv'],a2c:['mv'],a3c:['mv','av'],a5c:['av'],sub_lvot:['av'],sub_rvot:['pv'],psax_mv:['mv'],psax_av:['av']}[v.id];
+  if(expected) for(const id of expected) if(!sections.some(s=>s.id===id)) throw Error(`${v.id} missing ${id}`);
 }

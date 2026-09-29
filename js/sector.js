@@ -123,7 +123,7 @@ export class SectorView {
 
     if (extras.registered && extras.plane) {
       this._drawRegistered(extras.registered, extras.plane, f, depth, sector);
-      extras.registered.drawAorticSection(g, extras.plane,
+      extras.registered.drawValveSections(g, extras.plane,
         (x,y)=>[f.ox+x*f.s*(this.opts.invert ? -1 : 1),f.oy+y*f.s], true);
     }
     const byId = new Map(slices.map((r) => [r.id, r]));

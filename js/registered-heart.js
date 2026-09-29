@@ -45,10 +45,21 @@ export class RegisteredHeart {
       const points = [seeds.lv,seeds.rv,seeds.la,seeds.ra];
       normal = bestPlaneNormal(contact,points);
       target = mul(points.reduce(add,[0,0,0]),1/points.length);
-    } else if (id === 'plax') {
+    } else if (['plax','a3c','sub_lvot'].includes(id)) {
       const points = [h.apex,seeds.lv,seeds.la,h.valves.av];
+      if(id==='sub_lvot') points.push(h.valves.av,h.valves.av,h.valves.av,h.valves.av);
       normal = bestPlaneNormal(contact,points);
       target = mul(points.reduce(add,[0,0,0]),1/points.length);
+    } else if (['plax_rv_in','plax_rv_out','sub_rvot','a2c','a5c'].includes(id)) {
+      const points = {
+        plax_rv_in:[seeds.ra,seeds.rv,h.valves.tv,h.valves.tv],
+        plax_rv_out:[seeds.rv,h.valves.pv,h.valves.pv],
+        sub_rvot:[seeds.rv,h.valves.pv,h.valves.pv],
+        a2c:[h.apex,seeds.lv,seeds.la,h.valves.mv],
+        a5c:[h.apex,seeds.lv,h.valves.av,h.valves.av],
+      }[id];
+      normal=bestPlaneNormal(contact,points);
+      target=mul(points.reduce(add,[0,0,0]),1/points.length);
     } else return view;
     let beam = unit(sub(target,contact));
     beam = unit(sub(beam,mul(normal,dot(beam,normal))));
@@ -83,10 +94,57 @@ export class RegisteredHeart {
     return Math.abs(distance) < .12 && alignment > .8;
   }
 
+  valveSections(plane) {
+    const key = [...plane.origin,...plane.u,...plane.v,...plane.n].join(',');
+    if (this.valveCache?.key === key) return this.valveCache.sections;
+    const sections = [];
+    for (const mesh of this.meta.structures.filter(s=>s.group === 'valve')) {
+      const vertices = new Float32Array(this.mesh,mesh.vByte,mesh.vCount*3);
+      const indices = new Uint32Array(this.mesh,mesh.iByte,mesh.iCount*3);
+      const distances = new Float32Array(mesh.vCount);
+      for(let i=0;i<mesh.vCount;i++) distances[i] = plane.n.reduce((s,n,j)=>s+n*(vertices[i*3+j]-plane.origin[j]),0);
+      const segments = [];
+      for(let i=0;i<indices.length;i+=3) {
+        const ids = [indices[i],indices[i+1],indices[i+2]], points=[];
+        for(let edge=0;edge<3;edge++) {
+          const a=ids[edge],b=ids[(edge+1)%3],da=distances[a],db=distances[b];
+          if((da<0)===(db<0)) continue;
+          const t=da/(da-db);
+          const p=[0,1,2].map(j=>vertices[a*3+j]+t*(vertices[b*3+j]-vertices[a*3+j])-plane.origin[j]);
+          points.push([p.reduce((s,x,j)=>s+x*plane.u[j],0),p.reduce((s,x,j)=>s+x*plane.v[j],0)]);
+        }
+        if(points.length===2) segments.push(points);
+      }
+      if(segments.length) sections.push({id:mesh.id,label:mesh.label,segments});
+    }
+    this.valveCache={key,sections};
+    return sections;
+  }
+
+  drawValveSections(ctx,plane,project,monochrome=false) {
+    if(this.showValves === false) return [];
+    const sections=this.valveSections(plane);
+    ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+    // Exact intersections, not full leaflet silhouettes pasted onto each view.
+    const a=project(0,0),b=project(.025,0);
+    const width=Math.max(.8,Math.hypot(b[0]-a[0],b[1]-a[1]));
+    for(const section of sections) {
+      if(section.id==='av' && this.aorticSectionVisible(plane)) continue;
+      ctx.beginPath();
+      for(const [start,end] of section.segments) {ctx.moveTo(...project(...start));ctx.lineTo(...project(...end));}
+      ctx.strokeStyle=monochrome?'#c4c6cb':'#fff0d4';
+      ctx.lineWidth=width; ctx.stroke();
+    }
+    ctx.restore();
+    this.drawAorticSection(ctx,plane,project,monochrome);
+    return sections;
+  }
+
   // Explicit educational reconstruction of a CLOSED trileaflet valve. The
-  // atlas has no AV leaflet mesh. Project its root-coordinate geometry into
+  // atlas AV mesh does not resolve three individual cusps. Project root-coordinate geometry into
   // both displays, only near the basal valve plane; never follow the cursor.
   drawAorticSection(ctx, plane, project, monochrome = false) {
+    if(this.showValves === false) return false;
     if (!this.aorticSectionVisible(plane)) return false;
     const root = this.frame.heart.aortic_root, axis = root.axis;
     const cross = (a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
@@ -107,8 +165,8 @@ export class RegisteredHeart {
       for(let k=0;k<=24;k++) ctx.lineTo(...at((cusp+k/24)*Math.PI*2/3,root.radius));
       ctx.quadraticCurveTo(...at(end+.18,root.radius*.52),...centre);
       ctx.closePath();
-      ctx.fillStyle = monochrome ? ['#acaeb1','#c2c4c6','#95979b'][cusp] : ['#f4dec1','#dfc7a7','#cbb18f'][cusp];
-      ctx.fill(); ctx.strokeStyle = monochrome ? '#eeeeee' : '#614939'; ctx.stroke();
+      // Thin echogenic coaptation/attachment lines, not opaque pie wedges.
+      ctx.strokeStyle = monochrome ? '#e2e4e8' : '#fff0d4'; ctx.stroke();
     }
     ctx.restore();
     return true;

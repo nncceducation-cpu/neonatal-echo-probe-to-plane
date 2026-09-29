@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-5';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-5';
-import { SectorView, SHORT } from './sector.js?v=20260929-5';
-import { Scene3D } from './scene3d.js?v=20260929-5';
-import { Probe } from './probe.js?v=20260929-5';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-5';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-5';
+import { buildStructures } from './geom.js?v=20260929-6';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-6';
+import { SectorView, SHORT } from './sector.js?v=20260929-6';
+import { Scene3D } from './scene3d.js?v=20260929-6';
+import { Probe } from './probe.js?v=20260929-6';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-6';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-6';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -119,7 +119,7 @@ function selectView(id, initial = false) {
   });
   renderInfo();
   showReference(id);
-  if (!initial && id === 'psax_av' && state.mode !== 'quiz') {
+  if (!initial && echoReferences[id] && state.mode !== 'quiz') {
     $('#stage2d').classList.add('reference-mode');
     $('#echo-study-video').play().catch(() => {
       // Native video controls remain available if autoplay is blocked.
@@ -404,6 +404,7 @@ function newQuiz() {
 // -------------------------------------------------------------------- render
 function update() {
   const p = state.probe, v = state.view;
+  if(state.registered) state.registered.showValves = state.groups.has('valve');
   const ref = state.mode === 'quiz' ? undefined : echoReferences[v.id];
   const matched = !!ref && referenceMatches(p,v);
   const referenceMode = $('#stage2d').classList.contains('reference-mode');
@@ -437,7 +438,7 @@ function update() {
     $('.patient-orientation').textContent += ' · AV: three closed cusps (teaching reconstruction)';
   }
   const detail = $('#valve-detail');
-  detail.hidden = !(state.scene.showCut && state.registered?.aorticSectionVisible(plane));
+  detail.hidden = !(state.groups.has('valve') && state.scene.showCut && state.registered?.aorticSectionVisible(plane));
   if (!detail.hidden) {
     const root = state.registered.frame.heart.aortic_root;
     const offset = root.centre.map((x,i)=>x-plane.origin[i]);
@@ -453,9 +454,12 @@ function update() {
   $('#seen').innerHTML = '';
   if (state.registered) {
     const names = {2: 'LV', 3: 'RV', 4: 'LA', 5: 'RA'};
-    for (const code of state.sector.registeredVisible || []) {
+      for (const code of state.sector.registeredVisible || []) {
       $('#seen').appendChild(el('span', 'chip', names[code]));
-    }
+      }
+      for(const valve of state.registered.valveSections(plane)) {
+        $('#seen').appendChild(el('span','chip',valve.label));
+      }
   } else {
     const visible = slices.filter((r) => r.outer.concat(r.cavity)
       .some((l) => loopInSector(l, p.depth, p.sector)));

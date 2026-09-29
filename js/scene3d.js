@@ -6,8 +6,8 @@
 
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
-import { PAINT_ORDER } from './sector.js?v=20260929-5';
-import { torsoSurface } from './body.js?v=20260929-5';
+import { PAINT_ORDER } from './sector.js?v=20260929-6';
+import { torsoSurface } from './body.js?v=20260929-6';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
 const COLOR = {
@@ -430,7 +430,7 @@ export class Scene3D {
       image.data[at + 2] = color[2]; image.data[at + 3] = 255;
     }
     ctx.putImageData(image, 0, 0);
-    this.registeredVolume.drawAorticSection(ctx, plane,
+    this.registeredVolume.drawValveSections(ctx, plane,
       (x,y)=>[(x/width+.5)*N,(1-y/height)*N]);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
