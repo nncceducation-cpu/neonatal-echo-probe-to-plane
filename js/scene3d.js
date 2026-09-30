@@ -6,8 +6,8 @@
 
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
-import { PAINT_ORDER } from './sector.js?v=20260929-8';
-import { torsoSurface } from './body.js?v=20260929-8';
+import { PAINT_ORDER } from './sector.js?v=20260929-9';
+import { torsoSurface } from './body.js?v=20260929-9';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
 const COLOR = {

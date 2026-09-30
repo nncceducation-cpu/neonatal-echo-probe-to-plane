@@ -1,13 +1,13 @@
 // app.js - wire the anatomy, the slicer, the 3-D panel and the echo panel
 // together, and put a probe in the user's hand.
 
-import { buildStructures } from './geom.js?v=20260929-8';
-import { sliceAll, loopInSector } from './slicer.js?v=20260929-8';
-import { SectorView, SHORT } from './sector.js?v=20260929-8';
-import { Scene3D } from './scene3d.js?v=20260929-8';
-import { Probe } from './probe.js?v=20260929-8';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-8';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-8';
+import { buildStructures } from './geom.js?v=20260929-9';
+import { sliceAll, loopInSector } from './slicer.js?v=20260929-9';
+import { SectorView, SHORT } from './sector.js?v=20260929-9';
+import { Scene3D } from './scene3d.js?v=20260929-9';
+import { Probe } from './probe.js?v=20260929-9';
+import { RegisteredHeart } from './registered-heart.js?v=20260929-9';
+import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-9';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -142,9 +142,16 @@ function activateSection() {
   return changed;
 }
 
-function showReference(id) {
+function showReference(id, doppler = false) {
   const ref = echoReferences[id], box = $('#scan-reference');
   const video = $('#echo-study-video');
+  state.doppler = doppler && !!ref?.dopplerFile;
+  const dopplerButton = $('.echo-doppler-toggle');
+  if(dopplerButton) {
+    dopplerButton.disabled = !ref?.dopplerFile;
+    dopplerButton.textContent = state.doppler ? 'Show 2D clip' : 'With Doppler';
+    dopplerButton.setAttribute('aria-pressed',String(state.doppler));
+  }
   video.pause();
   video.removeAttribute('src');
   const button = $('.echo-reference-toggle');
@@ -155,11 +162,11 @@ function showReference(id) {
   $('#stage2d').classList.remove('reference-mode');
   box.hidden = !ref;
   if (!ref) {video.load(); return;}
-  video.src = `assets/echo-studies/${ref.file}`;
+  video.src = `assets/echo-studies/${state.doppler ? ref.dopplerFile : ref.file}`;
   video.setAttribute('aria-label',ref.title);
-  $('#scan-reference-caption').textContent = `${ref.title} · ${ref.source}`;
+  $('#scan-reference-caption').textContent = `${ref.title} · ${state.doppler ? 'Doppler' : '2D'} · ${ref.source}`;
   $('#scan-reference small').textContent = `${ref.landmarks} Separate recorded study, not a patient-matched reconstruction or tracked sweep.`;
-  $('#echo-source-link').href = `https://drive.google.com/file/d/${ref.id}/view`;
+  $('#echo-source-link').href = ref.id ? `https://drive.google.com/file/d/${ref.id}/view` : video.src;
 }
 
 // ------------------------------------------------------------------- controls
@@ -221,7 +228,16 @@ function buildControls() {
   const referenceButton = el('button','echo-reference-toggle','▶ Clinical clip');
   const fitButton = el('button','echo-fit','Fit whole section');
   fitButton.onclick = () => { state.autoFitEcho = true; update(); };
-  echoToolbar.append(referenceButton,fitButton);
+  const dopplerButton = el('button','echo-doppler-toggle','With Doppler');
+  dopplerButton.onclick = () => {
+    if(!echoReferences[state.view.id]?.dopplerFile) return;
+    if(!referenceMatches(state.probe,state.view)) state.probe.load(state.view);
+    const next=!state.doppler;
+    activateSection(); showReference(state.view.id,next);
+    $('#stage2d').classList.add('reference-mode');
+    video.play().catch(()=>{}); update();
+  };
+  echoToolbar.append(referenceButton,dopplerButton,fitButton);
   $('#stage2d').prepend(echoToolbar);
   referenceButton.onclick = () => {
     if (!echoReferences[state.view.id]) return;
