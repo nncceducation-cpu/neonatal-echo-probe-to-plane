@@ -5,15 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Neonatal echo: probe to plane</title>
 <meta name="description" content="Educational heart anatomy and probe-plane explorer with fixed acoustic windows, interactive sections, and supplied recorded echo studies. Not a diagnostic simulator.">
-<link rel="stylesheet" href="css/app.css?v=20260929-9">
+<link rel="stylesheet" href="css/app.css?v=colleague-review-1">
 </head>
 <body class="open-views">
 <header>
   <h1>Neonatal echo <span>&mdash; probe to plane</span></h1>
-  <p class="tagline">Every view here is a <strong>probe pose</strong>: a window on
-  the chest, a beam direction, and an index-mark rotation. The cut plane follows
-  the probe, and the sections are defined against the heart&rsquo;s own long
-  axis &mdash; not the body&rsquo;s.</p>
+  <p class="tagline">Explore probe poses and shared 3D / educational sections.
+  Compare independent recorded echocardiograms. Teaching anatomy under review.</p>
   <nav class="modes">
     <button id="panel-views" class="mbtn panel-toggle" aria-expanded="true" aria-controls="side-left">Views</button>
     <button id="panel-controls" class="mbtn panel-toggle" aria-expanded="false" aria-controls="side-right">Controls</button>
@@ -45,14 +43,21 @@
     <div id="upper-pair">
     <div id="stage-torso"><canvas id="c-torso" aria-label="Probe orientation on supine torso"></canvas><div class="pair-title">Probe on torso · head ↑</div><div class="cap">Drag to sweep / rotate · contact stays fixed</div></div>
     <div id="stage3d"><canvas id="c3d"></canvas>
-      <div class="pair-title">Corresponding anatomical cut</div>
+      <div class="pair-title">3D orientation model</div>
+      <div id="reference-anatomy" class="reference-anatomy" hidden>
+        <div class="illustration-heading">VIEW-SPECIFIC ILLUSTRATION · DRAFT 2</div>
+        <div class="illustration-svg"></div>
+        <p class="illustration-note"></p>
+        <p class="illustration-status">Static reference · not a live 3D slice</p>
+      </div>
       <figure id="valve-detail" hidden><canvas width="160" height="160" aria-label="Magnified reconstructed aortic cusps"></canvas><figcaption>AV detail · magnified<br>Teaching reconstruction</figcaption></figure>
       <button id="surface-view" class="surface-view">Reset 3D heart</button>
       <div class="cap" id="surface-credit">Normal Neonatal Heart · E-learning UMCG · CC BY-NC-SA 4.0</div>
     </div>
     </div>
     <div id="stage2d"><canvas id="c2d"></canvas>
-      <div class="cap">Educational chamber section &mdash; not a diagnostic echo image</div>
+      <div id="reference-anatomy-lower" class="reference-anatomy lower-illustration" hidden><div class="illustration-svg"></div></div>
+      <div class="cap">Educational anatomical section &mdash; not a diagnostic echo image</div>
     </div>
   </section>
 
@@ -126,13 +131,14 @@
       <label><input type="checkbox" id="t-invert"> Mirror the display</label>
     </div>
 
-    <h3>In the sector</h3>
+    <h3>Structures in this section</h3>
     <div id="seen" class="chips"></div>
     <p id="dev" class="mono dev"></p>
   </aside>
 </main>
 
 <footer>
+  <p class="developer-credit">Developed by Khorshid Mohammad <span>· Colleague-review draft · Not for clinical use</span></p>
   <details><summary>Sources, conventions and limitations</summary>
   <p>Index-mark directions are given in plain anatomical terms rather than as
   clock positions, because a clock position needs a 12 o&rsquo;clock reference on
@@ -141,17 +147,22 @@
   position, it is quoted and attributed on the view itself.</p>
   <p>The registered heart mesh and chamber labels derive from BodyParts3D
   (DBCLS, CC BY-SA 2.1 Japan), scaled into a term-newborn patient frame.
-  The 3D surface and grayscale chamber section use those assets; valves and
-  vessels are not yet reconstructed in the generated 2D panel. This is not
+  Both cut panels use the same section geometry and leaflet intersections.
+  The atlas and reconstructed valve surfaces are teaching approximations;
+  correspondence with supplied SCAN references needs clinical review.
+  Diastolic valve profiles are static;
+  they are not synchronized to the recorded clips. Clinical review is pending.
+  This is not
   patient-derived neonatal imaging or a realistic ultrasound simulator.
   The probe-pose rules are checked by
   <code>tools/verify_planes.py</code>, which runs this page&rsquo;s own
   <code>geom.js</code> and <code>slicer.js</code>.</p>
-  <p>A teaching model, not a diagnostic tool and not patient data.</p>
+  <p>A teaching reconstruction, not a diagnostic tool. The recorded clips are
+  independent clinical studies, not spatially or temporally registered to this model.</p>
   <p>Textured external surface: Normal Neonatal Heart, E-learning UMCG, CC BY-NC-SA 4.0. This surface is displayed separately from the registered section model.</p>
   </details>
 </footer>
 
-<script type="module" src="js/app.js?v=20260929-9"></script>
+<script type="module" src="js/app.js?v=clip-orientation-2"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/controls/OrbitControls.js';
-import { PAINT_ORDER } from './sector.js?v=20260929-9';
+import { PAINT_ORDER } from './sector.js?v=cuts-review-1';
 import { torsoSurface } from './body.js?v=20260929-9';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 
@@ -200,6 +200,16 @@ export class Scene3D {
    */
   setPlane(plane, slices, view) {
     this.lastPlane = plane;
+    this.cutViewId = view.id;
+    if(this.registeredVolume && this.registeredIsVascular!==!!this.registeredVolume.vascularActive) {
+      this.scene.remove(this.registered);
+      const key=this.registeredVolume.vascularActive?'vascular':'cardiac';
+      this.registeredVariants[key] ||= this.registeredVolume.makeMeshes(THREE,this.clip);
+      this.registered=this.registeredVariants[key];
+      this.registeredIsVascular=!!this.registeredVolume.vascularActive;
+      this.scene.add(this.registered);
+      if(this.visibleGroups)this.setVisibleGroups(this.visibleGroups);
+    }
     if (this.showCut && this.followCut) this.focusPlane(plane);
     const surfaceMode = !!this.surface && !this.showCut;
     if (this.surface) this.surface.visible = surfaceMode;
@@ -310,7 +320,7 @@ export class Scene3D {
   /** The heart's own long axis, drawn as the reference every section is built on. */
   setAxisVisible(on) {
     if (!this._axis) {
-      const h = this.anatomy.heart;
+      const h = this.registeredVolume?.frame.heart || this.anatomy.heart;
       const a = new THREE.Vector3(...h.apex);
       const b = new THREE.Vector3(...h.base);
       const dir = b.clone().sub(a).normalize();
@@ -325,18 +335,20 @@ export class Scene3D {
   }
 
   setVisibleGroups(groups) {
+    this.visibleGroups=groups;
     for (const [id, grp] of this.meshes) {
       const s = this.structures.get(id);
       grp.visible = groups.has(s.group);
     }
-    if (this.registered) for (const mesh of this.registered.children) {
-      mesh.visible = groups.has(mesh.userData.group);
-    }
+    for(const variant of Object.values(this.registeredVariants||{}))
+      for(const mesh of variant.children)mesh.visible=groups.has(mesh.userData.group);
   }
 
   useRegistered(volume, groups) {
     this.registeredVolume = volume;
     this.registered = volume.makeMeshes(THREE, this.clip);
+    this.registeredVariants={cardiac:this.registered};
+    this.registeredIsVascular=false;
     this.scene.add(this.registered);
     this.bodies.visible = false;
     this.setVisibleGroups(groups);
@@ -355,6 +367,14 @@ export class Scene3D {
       if (this.referenceReverseDepth) this.camera.up.negate();
       const myocardium = this.registered?.children.find(m => m.userData.id === 'myo');
       const box = new THREE.Box3().setFromObject(myocardium || this.bodies);
+      const focused=this.registeredVolume?.vascularFocus(plane,this.cutViewId)||[];
+      if(focused.length) {
+        box.makeEmpty();
+        for(const [x,d] of focused)box.expandByPoint(new THREE.Vector3(...plane.origin)
+          .addScaledVector(new THREE.Vector3(...plane.u),x)
+          .addScaledVector(new THREE.Vector3(...plane.v),d));
+        box.expandByScalar(.22);
+      }
       const side = (this.sliceInvert ? -1 : 1) * (this.referenceReverseDepth ? -1 : 1);
       this.fitBox(box, new THREE.Vector3(...plane.n).multiplyScalar(side));
       return;
@@ -435,6 +455,10 @@ export class Scene3D {
     }
     }
     ctx.putImageData(image, 0, 0);
+    // Preserve subpixel-thin leaflet intersections on the cut face. The lower
+    // panel uses this exact same contour function, not an independent drawing.
+    this.registeredVolume.drawValveSections(ctx,plane,
+      (lateral,depth)=>[(lateral/width+.5)*(N-1),(1-depth/height)*(N-1)]);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     const geometry = new THREE.PlaneGeometry(width, height);
@@ -478,13 +502,19 @@ export class Scene3D {
   render() {
     this.controls.update();
     if (this.overviewRenderer) {
+      // Preserve the complete cardiac orientation model on the torso even
+      // when the close-up is an explicitly isolated great-vessel field.
+      const cardiacOverview=this.registeredIsVascular?this.registeredVariants.cardiac:null;
+      if(cardiacOverview)this.scene.add(cardiacOverview);
       const objects = [this.torso,this.windowDots,this.probe,this.overlay,this.caps,this.surface,this.registered,this.bodies].filter(Boolean);
       const previous = objects.map(o=>o.visible);
       this.torso.visible = this.windowDots.visible = this.probe.visible = this.overlay.visible = true;
       this.caps.visible = false;
       if(this.surface) this.surface.visible = false;
-      if(this.registered) this.registered.visible = true;
+      if(this.registered) this.registered.visible = !cardiacOverview;
+      if(cardiacOverview)cardiacOverview.visible=true;
       this.overviewRenderer.render(this.scene,this.overviewCamera);
+      if(cardiacOverview)this.scene.remove(cardiacOverview);
       objects.forEach((o,i)=>o.visible=previous[i]);
     }
     this.renderer.render(this.scene, this.camera);

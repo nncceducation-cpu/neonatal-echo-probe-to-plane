@@ -3,11 +3,11 @@
 
 import { buildStructures } from './geom.js?v=20260929-9';
 import { sliceAll, loopInSector } from './slicer.js?v=20260929-9';
-import { SectorView, SHORT } from './sector.js?v=20260929-9';
-import { Scene3D } from './scene3d.js?v=20260929-9';
+import { SectorView, SHORT } from './sector.js?v=clip-orientation-2';
+import { Scene3D } from './scene3d.js?v=arch-duct-2';
 import { Probe } from './probe.js?v=20260929-9';
-import { RegisteredHeart } from './registered-heart.js?v=20260929-9';
-import { echoReferences, referenceMatches } from './echo-references.js?v=20260929-9';
+import { RegisteredHeart } from './registered-heart.js?v=arch-duct-2';
+import { echoReferences, referenceMatches, cutOrientation } from './echo-references.js?v=clip-orientation-2';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, txt) => {
@@ -113,7 +113,7 @@ function selectView(id, initial = false) {
   state.probe = new Probe(v);
   state.autoFitEcho = true;
   state.quiz = null;
-  if (!initial) activateSection();
+  activateSection();
   document.querySelectorAll('.vbtn').forEach((b) => {
     b.classList.toggle('on', b.dataset.id === id);
   });
@@ -138,7 +138,7 @@ function activateSection() {
   state.scene.showCut = true;
   $('#t-cut').checked = true;
   $('#surface-credit').hidden = true;
-  $('#anatomy-source').textContent = 'Section anatomy · right blue / left red';
+  $('#anatomy-source').textContent = 'Shared 3D / educational section · teaching anatomy under review';
   return changed;
 }
 
@@ -317,7 +317,7 @@ function buildControls() {
     state.scene.showCut = e.target.checked; update();
     state.scene.focusPlane(state.probe.plane());
     $('#anatomy-source').textContent = e.target.checked
-      ? 'Section anatomy · right blue / left red'
+      ? 'Shared 3D / educational section · teaching anatomy under review'
       : state.scene.surface ? 'Textured neonatal surface · UMCG' : 'Anatomical mesh';
     $('#surface-credit').hidden = e.target.checked || !state.scene.surface;
   };
@@ -420,22 +420,25 @@ function newQuiz() {
 // -------------------------------------------------------------------- render
 function update() {
   const p = state.probe, v = state.view;
+  const vascular=state.registered?.setVascularView(v.id);
   if(state.registered) state.registered.showValves = state.groups.has('valve');
   if(state.registered) state.registered.showDetails = state.groups.has('detail');
+  if(state.registered) state.registered.showVessels = state.groups.has('vessel');
   const ref = state.mode === 'quiz' ? undefined : echoReferences[v.id];
   const matched = !!ref && referenceMatches(p,v);
   const referenceMode = $('#stage2d').classList.contains('reference-mode');
   $('#stage2d .cap').textContent = referenceMode
     ? 'Recorded echo study · independent source patient'
-    : 'Educational chamber section — not a diagnostic echo image';
+    : vascular ? 'Vessel-only teaching section · chambers omitted · not a patient reconstruction'
+    : 'Educational anatomical section · not a diagnostic echo image';
   const referenceButton = $('.echo-reference-toggle');
   referenceButton.disabled = !ref;
   referenceButton.textContent = !ref ? 'No clinical clip for this view'
     : !matched ? '▶ Reset view & play clinical clip'
-    : referenceMode ? 'Show simulated section' : '▶ Play clinical clip';
+    : referenceMode ? 'Show educational cut' : '▶ Play clinical clip';
   const plane = p.plane();
   if (state.autoFitEcho && state.registered) {
-    const fitted = state.registered.fitSector(plane);
+    const fitted = state.registered.fitSector(plane,v.id);
     p.depth = fitted.depth; p.sector = fitted.sector;
     $('#depth').value = p.depth;
     $('#depth-val').textContent = `${p.depth.toFixed(1)} cm · fan ${p.sector}° (auto-fit)`;
@@ -444,15 +447,24 @@ function update() {
   const slices = sliceAll(state.structures, plane)
     .filter((r) => state.groups.has(r.group));
   state.scene.setProbe(p.contact, p.beam, p.index);
-  state.scene.sliceInvert = state.sector.opts.invert;
-  state.scene.referenceReverseDepth = referenceMode && !!ref?.reverseDepth;
+  const orientation = cutOrientation(v.id, state.sector.opts.invert);
+  state.sector.orientation = orientation;
+  state.scene.sliceInvert = orientation.flipX;
+  state.scene.referenceReverseDepth = orientation.flipY;
   state.scene.setPlane(plane, slices, view);
+  const concealed=state.mode==='quiz'&&!state.quiz?.done;
+  $('#reference-anatomy').hidden=true;
+  $('#reference-anatomy-lower').hidden=true;
+  $('#stage3d').classList.remove('illustrated');
+  $('#stage2d').classList.remove('illustrated');
+  $('#c3d').style.visibility='visible';
+  $('#c2d').style.visibility=referenceMode?'hidden':'visible';
+  $('#stage3d .pair-title').textContent=state.scene.showCut?(vascular?'Vessel-only 3D cut · teaching reconstruction':'Anatomical cut · review draft'):'3D orientation model';
   $('.patient-orientation').textContent = state.scene.showCut && state.scene.followCut
-    ? `Cut-face view · ${referenceMode ? 'recorded-view orientation' : 'live-section orientation'} · beam ${state.scene.referenceReverseDepth ? '↑' : '↓'}`
+    ? `Cut-face view · ${echoReferences[v.id] ? 'clip-matched orientation' : 'native orientation'}${state.sector.opts.invert ? ' · manual mirror' : ''} · beam ${orientation.flipY ? '↑' : '↓'}`
     : state.scene.showCut ? 'Free camera · return to Mouse: slice to face the cut'
       : 'Supine · overhead · head ↑';
   $('#valve-detail').hidden = true;
-  if(state.scene.showCut && v.id==='psax_av') $('.patient-orientation').textContent += ' · Aortic leaflets unavailable in source model; see recorded clip';
   state.sector.draw(slices, view, { highlight: state.highlight,
     registered: state.registered, plane });
 
@@ -476,6 +488,7 @@ function update() {
     }
   }
 
+  if(concealed) $('#seen').replaceChildren();
   const dv = p.deviation(v);
   $('#dev').textContent = state.mode === 'quiz' ? ''
     : `plane ${dv.plane_deg}\u00b0 \u00b7 beam ${dv.beam_deg}\u00b0 \u00b7 `
@@ -496,7 +509,7 @@ function renderInfo() {
                 `index mark ${v.index_toward}`,
                 `depth ${v.depth} cm`, `sector ${v.sector}\u00b0`];
   if (v.clock_stated) bits.push(`stated pointer position ${v.clock_stated}`);
-  if (v.registration_note) bits.push('registered mesh fit');
+  if (v.registration_note) bits.push(state.registered.vascular.presets[v.id] ? v.registration_note : 'registered mesh fit');
   if (m.phi_from_plax_deg != null) {
     bits.push(`rotation about the long axis: ${m.phi_from_plax_deg}\u00b0 from PLAX`);
   }

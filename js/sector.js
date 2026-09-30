@@ -3,7 +3,7 @@
 // The panel is not a picture of the 3-D scene: it is the same contour loops the
 // slicer produced, drawn in the imaging plane's own frame with the conventions
 // of an ultrasound display.  The transducer face sits at the apex of the
-// sector, depth increases downward, and the transducer index mark maps to the
+// sector, depth follows the linked recording's display direction, and the index maps to the
 // RIGHT of the image (cardiology convention).  That is what makes the panel
 // answer the question the deck cares about: given where I put the probe and
 // how I turned it, what will I see on the screen?
@@ -25,6 +25,10 @@ const TISSUE = {
 // swamps the subcostal and suprasternal views with a white block that no real
 // image contains, so it is left to the 3-D panel as an orientation landmark.
 export const SKIP_2D = new Set(['spine']);
+
+// Chamber ownership is not a tissue boundary: LV/LA and RV/RA grid labels
+// meet across open inflow. Highlighting that seam invents a septum/leaflet.
+export const sectionTissueClass = code => code === 0 ? 'wall' : code === 6 ? 'valve' : 'blood';
 
 // Painted back to front, so a structure drawn later reads as lying in front of
 // the ones before it.  This is what makes the septum appear between the two
@@ -62,6 +66,7 @@ export class SectorView {
     this.canvas = canvas;
     this.g = canvas.getContext('2d');
     this.opts = { speckle: true, labels: true, invert: false, grid: true };
+    this.orientation = { flipX: false, flipY: false };
   }
 
   /** Map plane centimetres to canvas pixels. */
@@ -74,15 +79,17 @@ export class SectorView {
     const sx = (W - 2 * pad) / (2 * depth * Math.sin(half));
     const sy = Math.max(1,H - pad - 38 * ratio) / depth;
     const s = Math.min(sx, sy);
-    return { s, ox: W / 2, oy: pad, W, H };
+    const { flipX, flipY } = this.orientation;
+    return { s, xs: flipX ? -s : s, ys: flipY ? -s : s,
+      direction: flipY ? -1 : 1, ox: W / 2, oy: flipY ? H - 38 * ratio : pad, W, H };
   }
 
   _path(loop, f, close = true) {
     const g = this.g;
     g.beginPath();
     loop.forEach((p, i) => {
-      const x = f.ox + p[0] * f.s * (this.opts.invert ? -1 : 1);
-      const y = f.oy + p[1] * f.s;
+      const x = f.ox + p[0] * f.xs;
+      const y = f.oy + p[1] * f.ys;
       if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
     });
     if (close) g.closePath();
@@ -93,8 +100,9 @@ export class SectorView {
     const half = (sectorDeg * Math.PI) / 360;
     const near = 0.18;                       // small flat transducer footprint
     g.beginPath();
-    g.moveTo(f.ox - near * f.s * Math.sin(half), f.oy + near * f.s);
-    g.arc(f.ox, f.oy, depth * f.s, Math.PI / 2 - half, Math.PI / 2 + half);
+    g.moveTo(f.ox - near * f.s * Math.sin(half), f.oy + near * f.ys);
+    g.arc(f.ox, f.oy, depth * f.s,
+      f.direction * (Math.PI / 2 - half), f.direction * (Math.PI / 2 + half), f.direction < 0);
     g.closePath();
   }
 
@@ -175,21 +183,21 @@ export class SectorView {
       const half = (sector * Math.PI) / 360;
       for (let d = 1; d <= Math.floor(depth); d++) {
         const x = f.ox - d * f.s * Math.sin(half) - 6;
-        const y = f.oy + d * f.s * Math.cos(half);
+        const y = f.oy + d * f.ys * Math.cos(half);
         g.beginPath(); g.moveTo(x, y); g.lineTo(x + 6, y); g.stroke();
         g.fillText(`${d}`, x - 11, y + 3);
       }
-      g.fillText('cm', f.ox - depth * f.s * Math.sin(half) - 22, f.oy + 10);
+      g.fillText('cm', f.ox - depth * f.s * Math.sin(half) - 22, f.oy + 10 * f.direction);
     }
 
     // The orientation marker: real machines put a dot or 'V' on the side of the
     // image that corresponds to the transducer index mark.
-    const side = this.opts.invert ? -1 : 1;
+    const side = this.orientation.flipX ? -1 : 1;
     const half = (sector * Math.PI) / 360;
     const mx = f.ox + side * (0.72 * depth * f.s * Math.sin(half));
     g.fillStyle = '#ffd24a';
     g.beginPath();
-    g.moveTo(mx, f.oy + 6); g.lineTo(mx - 6, f.oy - 5); g.lineTo(mx + 6, f.oy - 5);
+    g.moveTo(mx, f.oy + 6 * f.direction); g.lineTo(mx - 6, f.oy - 5 * f.direction); g.lineTo(mx + 6, f.oy - 5 * f.direction);
     g.closePath(); g.fill();
     g.font = '11px ui-monospace, monospace';
     g.fillText('index', mx + 10, f.oy + 2);
@@ -204,25 +212,33 @@ export class SectorView {
     const img = g.getImageData(0, 0, f.W, f.H);
     const pix = img.data, step = 2;
     const u = plane.u, v = plane.v, o = plane.origin;
-    for (let y = Math.max(0, Math.floor(f.oy)); y < Math.min(f.H, f.oy + depth * f.s); y += step) {
-      const d = (y - f.oy) / f.s;
+    const farY = f.oy + depth * f.ys;
+    for (let y = Math.max(0, Math.ceil(Math.min(f.oy, farY))); y < Math.min(f.H, Math.max(f.oy, farY)); y += step) {
+      const d = (y - f.oy) / f.ys;
       const crossings = volume.wallIntervals(plane,d);
       const tissues = volume.tissueIntervals(plane,d);
       const bound = Math.min(d * Math.tan(half), Math.sqrt(Math.max(0, depth * depth - d * d)));
       const x0 = Math.max(0, Math.floor(f.ox - bound * f.s));
       const x1 = Math.min(f.W, Math.ceil(f.ox + bound * f.s));
       for (let x = x0; x < x1; x += step) {
-        const lateral = (x - f.ox) / f.s * (this.opts.invert ? -1 : 1);
+        const lateral = (x - f.ox) / f.xs;
         const p = [o[0] + u[0] * lateral + v[0] * d,
                    o[1] + u[1] * lateral + v[1] * d,
                    o[2] + u[2] * lateral + v[2] * d];
         const label = volume.sampleSection(p,lateral,crossings,tissues);
         if (label === 1) continue;
-        if (label >= 2 && label <= 5) this.registeredVisible.add(label);
+        if (label >= 2 && label <= 5) {
+          // Vessel lumens share the red/blue palette but are not chambers.
+          const chamber = volume.sample(p);
+          if(chamber>=2 && chamber<=5)this.registeredVisible.add(chamber);
+        }
         const neighbor = volume.sampleSection([p[0] + u[0] * volume.step,
                                         p[1] + u[1] * volume.step,
                                         p[2] + u[2] * volume.step],lateral+volume.step,crossings,tissues);
-        const edge = neighbor !== label;
+        // Chamber labels distinguish atria/ventricles for teaching, not tissue.
+        // Flood-fill label boundaries inside blood must never become bright
+        // pseudo-septa, chordae or valve leaflets in the grayscale section.
+        const edge = sectionTissueClass(neighbor) !== sectionTissueClass(label);
         const noise = this.opts.speckle ? (((x * 73 + y * 151) ^ (x * y * 13)) & 31) - 16 : 0;
         const grey = Math.max(0, Math.min(255, (label === 6 ? 165 : edge ? 179 : label === 0 ? 112 : 19) + noise));
         for (let yy = y; yy < Math.min(y + step, f.H); yy++) for (let xx = x; xx < Math.min(x + step, f.W); xx++) {
@@ -241,6 +257,8 @@ export class SectorView {
     g.filter = `blur(${Math.min(2,window.devicePixelRatio || 1)*.7}px)`;
     g.drawImage(buffer,0,0);
     g.restore();
+    volume.drawValveSections(g,plane,
+      (lateral,d)=>[f.ox+lateral*f.xs,f.oy+d*f.ys],true);
   }
 
   _labels(slices, view, f, extras) {
@@ -270,8 +288,8 @@ export class SectorView {
     g.font = '600 11px ui-sans-serif, system-ui, sans-serif';
     g.textBaseline = 'middle';
     for (const c of cands) {
-      const x = f.ox + c.pt[0] * f.s * (this.opts.invert ? -1 : 1);
-      const y = f.oy + c.pt[1] * f.s;
+      const x = f.ox + c.pt[0] * f.xs;
+      const y = f.oy + c.pt[1] * f.ys;
       if (placed.some((p) => Math.hypot(p[0] - x, p[1] - y) < 26)) continue;
       placed.push([x, y]);
       const txt = SHORT[c.r.id] || c.r.id.toUpperCase();
